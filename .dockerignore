@@ -1,0 +1,10 @@
+.git
+.github
+bin/
+docs/
+data/raw/
+data/snapshots/
+data/boundaries/
+.env
+*.md
+!README.md
