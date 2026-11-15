@@ -14,14 +14,14 @@ Go 1.26+ API (`cmd/api`) and ingest CLI (`cmd/ingest`) for the NASA Space Apps 2
 | **A0** | Contract: `internal/domain`, `internal/store/store.go`, `api/openapi.yaml`, `api/examples/*.json` (E1–E15) | ✅ done (awaiting review) |
 | **A1** | `cmd/api` (serve + graceful shutdown, `prewarm-sar` stub), `internal/config` (+ SAR mission table), `internal/httpapi` (router, middleware, errors, params, ETag helper), **E1 `/healthz`** | ✅ done (awaiting review) |
 | A2 | `store/postgres` read side | ⏳ needs Mohammed's M1–M3 (migrations + seed) |
-| A3 | Cube + E2 meta, E3 types, E4 choropleth, E5 timeseries | ⏳ after A2 |
+| **A3** | Cube (prefix sums) + breaks + `StatsService` (reload on version change) + **E2 meta, E3 incident-types, E4 choropleth, E5 timeseries** (ETag/304, Cache-Control); dev fixture reader `internal/store/fixture` (`STATS_FIXTURE`) | ✅ done (awaiting review). Real data after A2 |
 | A4 | E7 incidents, E8 detail, E9 search | ⏳ after A2 |
 | A5 | ASF client + E10 sar, E11 coverage-timeline | ⏳ |
 | A6 | E12/E13 stories, E14 media | ⏳ needs M14 (stories loader) |
 | A7–A11, A13 | ETag wiring, grid, prewarm, deploy, perf, hardening | ⏳ |
 | A12 | AI chat (**ADDITIONAL — NOT REQUIRED**) | ⏳ only after S7 go |
 
-Right now `/healthz` is live. E2–E14 answer **501 `not_implemented`** in the standard error JSON. `POST /api/v1/chat` answers
+Right now E1–E5 are live (E2/E4/E5 need a data source: `STATS_FIXTURE` today, the DB after A2; otherwise **503 `not_ready`**, while E3 always works). E6–E14 answer **501 `not_implemented`** in the standard error JSON. `POST /api/v1/chat` answers
 **503 `chat_disabled`**. Use `api/examples/*.json` as mocks for the real shapes.
 
 ## Run the API locally (Windows)
@@ -48,6 +48,17 @@ DATABASE_URL="postgres://dwts:dwts@localhost:5432/dwts?sslmode=disable" go run .
 ```
 
 Or copy `.env.example` to `.env`. It is loaded automatically, and real environment variables win.
+
+### Try E2–E5 today with the dev fixture (no DB)
+`testdata/stats_fixture.json` holds synthetic but plausible counts (12 countries, 8 types, 1950–2025, ocean). **It is not real data.**
+```bash
+STATS_FIXTURE=testdata/stats_fixture.json go run ./cmd/api        # PowerShell: $env:STATS_FIXTURE="testdata/stats_fixture.json"; go run ./cmd/api
+curl -s localhost:8080/api/v1/meta
+curl -s localhost:8080/api/v1/incident-types
+curl -s "localhost:8080/api/v1/stats/choropleth?types=earthquake,flood&from=1950&to=2000"
+curl -s "localhost:8080/api/v1/stats/timeseries?types=storm&from=1980&to=1983&iso3=PHL"
+curl -s -i -H 'If-None-Match: <ETag from the previous response>' "localhost:8080/api/v1/stats/choropleth?types=earthquake,flood&from=1950&to=2000"   # → 304
+```
 
 ### Build, vet, test (no `make` needed)
 ```bash
@@ -78,6 +89,7 @@ api prewarm-sar --top 200     # task A9, currently prints "not implemented yet"
 | `MIN_YEAR` | `1900` | |
 | `CUBE_RELOAD_INTERVAL` | `60s` | Used from A3 |
 | `STATIC_DIR` | *(empty)* | Serve the frontend build (later) |
+| `STATS_FIXTURE` | *(empty)* | **DEV-ONLY** JSON fixture for E2–E5 until A2 (e.g. `testdata/stats_fixture.json`) |
 | `STORIES_DIR` | `./data/stories` | Used from A6 |
 | `ASF_BASE_URL` | `https://api.daac.asf.alaska.edu/services/search/param` | Used from A5 |
 | `ASF_TIMEOUT` / `SAR_WINDOW_DAYS` / `SAR_CACHE_TTL` / `SAR_DB_FRESH` | `8s` / `45` / `24h` / `168h` | Used from A5 |
@@ -93,7 +105,10 @@ cmd/ingest/main.go                      placeholder (Mohammed)
 internal/domain/                        shared types, errors, cursor codec (A0, contract)
 internal/store/store.go                 persistence interfaces (A0, contract)
 internal/config/                        env config + SAR mission era table (A1)
-internal/httpapi/                       router, middleware, errors, params, DTOs, /healthz (A1)
+internal/httpapi/                       router, middleware, errors, params, DTOs, /healthz (A1), E2–E5 handlers (A3)
+internal/service/                       Cube, Breaks, StatsService (A3)
+internal/store/fixture/                 DEV-ONLY StatsReader from JSON (A3, replaced by store/postgres in A2)
+testdata/stats_fixture.json             synthetic stats fixture (not real data)
 internal/platform/                      slog + http.Client (M0 file, see HANDOFF_TO_MOHAMMED.md)
 ```
 Import rules R1–R8 (Plan_Middle §4): `httpapi` never imports `store`; `domain` imports nothing internal.

@@ -21,6 +21,9 @@ import (
 	"github.com/dwts/backend/internal/config"
 	"github.com/dwts/backend/internal/httpapi"
 	"github.com/dwts/backend/internal/platform"
+	"github.com/dwts/backend/internal/service"
+	"github.com/dwts/backend/internal/store"
+	"github.com/dwts/backend/internal/store/fixture"
 )
 
 // version is set at build time: go build -ldflags "-X main.version=demo-v1".
@@ -83,6 +86,24 @@ func runServe(args []string) error {
 		defer pool.Close()
 		deps.DB = pool // assign only a non-nil pool (avoid a typed-nil interface)
 	}
+
+	// Stats (A3). Data source: STATS_FIXTURE (dev-only JSON) until the Postgres reader lands in A2.
+	var statsReader store.StatsReader
+	if cfg.StatsFixture != "" {
+		fr, err := fixture.Load(cfg.StatsFixture)
+		if err != nil {
+			return err
+		}
+		log.Warn("DEV: serving stats from a fixture file, not the database", "path", cfg.StatsFixture)
+		statsReader = fr
+	}
+	// TODO(A2): else if deps.DB != nil { statsReader = postgres.NewReader(pool) }
+	features := map[string]bool{"chat": deps.ChatEnabled, "stories": false, "grid": false, "sar": false}
+	stats := service.NewStatsService(statsReader, nil, cfg.MinYear, features, log)
+	if err := stats.Start(ctx, cfg.CubeReloadInterval); err != nil {
+		log.Warn("stats not ready yet; E2/E4/E5 answer 503 not_ready until data loads", "err", err)
+	}
+	deps.Stats = stats
 
 	srv := &http.Server{
 		Addr:              cfg.HTTPAddr,

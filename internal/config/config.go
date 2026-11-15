@@ -32,6 +32,7 @@ type Config struct {
 	DBMaxConns         int32
 	CubeReloadInterval time.Duration
 	StaticDir          string
+	StatsFixture       string // DEV-ONLY: JSON fixture for E2–E5 when there is no DB (until A2)
 	ASFBaseURL         string
 	ASFTimeout         time.Duration
 	SARWindowDays      int
@@ -69,6 +70,7 @@ func FromEnv(getenv func(string) string) (Config, error) {
 		DBMaxConns:         int32(p.getInt("DB_MAX_CONNS", 10)),
 		CubeReloadInterval: p.getDur("CUBE_RELOAD_INTERVAL", 60*time.Second),
 		StaticDir:          p.getStr("STATIC_DIR", ""),
+		StatsFixture:       p.getStr("STATS_FIXTURE", ""),
 		ASFBaseURL:         p.getStr("ASF_BASE_URL", "https://api.daac.asf.alaska.edu/services/search/param"),
 		ASFTimeout:         p.getDur("ASF_TIMEOUT", 8*time.Second),
 		SARWindowDays:      p.getInt("SAR_WINDOW_DAYS", 45),
