@@ -17,8 +17,11 @@ import (
 	"github.com/dwts/backend/internal/domain"
 )
 
-func testRouter(db Pinger) http.Handler {
+func testRouter(db Pinger) http.Handler { return testRouterWith(db, nil) }
+
+func testRouterWith(db Pinger, stats StatsAPI) http.Handler {
 	return NewRouter(Deps{
+		Stats:          stats,
 		Log:            slog.New(slog.NewTextHandler(io.Discard, nil)),
 		DB:             db,
 		CORSOrigins:    []string{"http://localhost:5173"},
@@ -58,19 +61,23 @@ func decodeError(t *testing.T, rec *httptest.ResponseRecorder) ErrorBody {
 // --- /healthz ---
 
 func TestHealthz(t *testing.T) {
+	ready := &stubStats{ready: true, version: 7}
 	cases := []struct {
 		name       string
 		db         Pinger
+		stats      StatsAPI
 		wantStatus string
 		wantDB     string
+		wantCube   int64
 	}{
-		{"no database", nil, "degraded", "not_configured"},
-		{"db down", fakePinger{err: errors.New("connection refused")}, "degraded", "unavailable"},
-		{"db ok", fakePinger{}, "ok", "ok"},
+		{"no database", nil, nil, "degraded", "not_configured", 0},
+		{"db down", fakePinger{err: errors.New("connection refused")}, ready, "degraded", "unavailable", 7},
+		{"db ok, cube not loaded", fakePinger{}, &stubStats{}, "degraded", "ok", 0},
+		{"db ok, cube loaded", fakePinger{}, ready, "ok", "ok", 7},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
-			rec := do(t, testRouter(c.db), http.MethodGet, "/healthz", nil)
+			rec := do(t, testRouterWith(c.db, c.stats), http.MethodGet, "/healthz", nil)
 			if rec.Code != http.StatusOK {
 				t.Fatalf("status %d", rec.Code)
 			}
@@ -78,7 +85,7 @@ func TestHealthz(t *testing.T) {
 			if err := json.Unmarshal(rec.Body.Bytes(), &h); err != nil {
 				t.Fatal(err)
 			}
-			if h.Status != c.wantStatus || h.DB != c.wantDB || h.UptimeSec < 4 || h.Version != "test" {
+			if h.Status != c.wantStatus || h.DB != c.wantDB || h.CubeVersion != c.wantCube || h.UptimeSec < 4 || h.Version != "test" {
 				t.Errorf("got %+v", h)
 			}
 			if rec.Header().Get("Cache-Control") != "no-store" {
@@ -134,7 +141,7 @@ func TestErrorShapeOnUnknownRouteAndMethod(t *testing.T) {
 
 func TestNotImplementedAndChatDisabled(t *testing.T) {
 	h := testRouter(nil)
-	for _, p := range []string{"/api/v1/meta", "/api/v1/stats/choropleth", "/api/v1/incidents/1/sar",
+	for _, p := range []string{"/api/v1/incidents", "/api/v1/stats/grid", "/api/v1/incidents/1/sar",
 		"/api/v1/stories", "/api/v1/sar/coverage-timeline", "/media/stories/x/a.png"} {
 		rec := do(t, h, http.MethodGet, p, nil)
 		if rec.Code != http.StatusNotImplemented || decodeError(t, rec).Error.Code != CodeNotImplemented {

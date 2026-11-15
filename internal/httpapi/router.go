@@ -25,7 +25,8 @@ type Deps struct {
 	RequestTimeout time.Duration
 	StartedAt      time.Time
 	Version        string
-	ChatEnabled    bool // ADDITIONAL — NOT REQUIRED (A12)
+	ChatEnabled    bool     // ADDITIONAL — NOT REQUIRED (A12)
+	Stats          StatsAPI // nil = no stats service (E2/E4/E5 → 503, E3 static)
 }
 
 // NewRouter builds the full HTTP handler.
@@ -58,10 +59,10 @@ func NewRouter(d Deps) http.Handler {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		// Registered with 501 until their task lands, so the frontend sees the final error shape.
-		r.Get("/meta", notImplemented("A3"))                  // E2
-		r.Get("/incident-types", notImplemented("A3"))        // E3
-		r.Get("/stats/choropleth", notImplemented("A3"))      // E4
-		r.Get("/stats/timeseries", notImplemented("A3"))      // E5
+		r.Get("/meta", h.meta)                                // E2
+		r.Get("/incident-types", h.incidentTypes)             // E3
+		r.Get("/stats/choropleth", h.choropleth)              // E4
+		r.Get("/stats/timeseries", h.timeseries)              // E5
 		r.Get("/stats/grid", notImplemented("A8"))            // E6
 		r.Get("/incidents", notImplemented("A4"))             // E7
 		r.Get("/incidents/{id}", notImplemented("A4"))        // E8
