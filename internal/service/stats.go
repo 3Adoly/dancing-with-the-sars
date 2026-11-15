@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"maps"
@@ -16,7 +15,7 @@ import (
 )
 
 // ErrNotImplemented marks service methods whose task has not landed yet (e.g. Grid → A8).
-var ErrNotImplemented = errors.New("not implemented yet")
+var ErrNotImplemented = domain.ErrNotImplemented
 
 // snapshot is everything the stats endpoints need, swapped atomically as one unit.
 type snapshot struct {
