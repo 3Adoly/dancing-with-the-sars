@@ -1,0 +1,8 @@
+{
+  "items": [
+    { "id": 118233, "type": "volcano", "title": "Pinatubo eruption (VEI 6)", "startTime": "1991-06-15T00:00:00Z", "lon": 120.35, "lat": 15.13, "magnitude": 6, "severity": 3, "primaryIso3": "PHL" },
+    { "id": 118201, "type": "volcano", "title": "Unzen eruption", "startTime": "1991-06-03T00:00:00Z", "lon": 130.3, "lat": 32.75, "magnitude": 1, "severity": 3, "primaryIso3": "JPN" }
+  ],
+  "nextCursor": "eyJzIjozLCJtIjoxLCJpIjoxMTgyMDF9",
+  "limit": 2
+}

@@ -1,0 +1,16 @@
+{
+  "types": ["earthquake", "flood"],
+  "from": 1950,
+  "to": 2000,
+  "level": "country",
+  "unit": "incidents",
+  "counts": { "JPN": 6120, "IDN": 5833, "USA": 3022, "CHN": 2410, "PHL": 1980 },
+  "ocean": 81234,
+  "total": 152330,
+  "max": 6120,
+  "breaks": [0, 20, 100, 500, 2000, 6120],
+  "coverage": [
+    { "type": "flood", "fromYear": 1985, "toYear": 2026, "sources": ["dfo", "gdacs"], "note": "1950–1984 not covered" }
+  ],
+  "datasetVersion": 42
+}

@@ -1,0 +1,41 @@
+{
+  "id": "pakistan-2022-flood",
+  "title": "Indus floods, Pakistan (2022)",
+  "summary": "Radar sees the flood under monsoon clouds.",
+  "incidentId": 612004,
+  "incidentSource": "dfo",
+  "incidentSourceId": "5000",
+  "type": "flood",
+  "place": "Sindh, Pakistan",
+  "iso3": "PAK",
+  "bbox": [67.5, 26.0, 69.0, 28.0],
+  "center": [68.25, 27.0],
+  "zoom": 8,
+  "eventDate": "2022-08-25",
+  "beforeDate": "2022-07-30",
+  "afterDate": "2022-08-29",
+  "platform": "Sentinel-1",
+  "band": "C",
+  "polarization": "VV",
+  "product": "Sentinel-1 RTC (ASF HyP3)",
+  "thumbnail": "/media/stories/pakistan-2022-flood/thumb.jpg",
+  "layers": [
+    { "kind": "before", "url": "/media/stories/pakistan-2022-flood/before_vv.png", "bounds": [67.5, 26.0, 69.0, 28.0], "date": "2022-07-30" },
+    { "kind": "after", "url": "/media/stories/pakistan-2022-flood/after_vv.png", "bounds": [67.5, 26.0, 69.0, 28.0], "date": "2022-08-29" },
+    {
+      "kind": "change",
+      "url": "/media/stories/pakistan-2022-flood/change_logratio.png",
+      "bounds": [67.5, 26.0, 69.0, 28.0],
+      "legend": { "type": "diverging", "min": -6, "max": 6, "unit": "dB", "lowLabel": "decrease (likely new water)", "highLabel": "increase", "colors": ["#2166ac", "#f7f7f7", "#b2182b"] }
+    },
+    { "kind": "frame", "url": "/media/stories/pakistan-2022-flood/frame_202206.png", "bounds": [67.5, 26.0, 69.0, 28.0], "date": "2022-06-15", "label": "June" }
+  ],
+  "explanation": {
+    "driver": "Extreme monsoon rainfall in July–August 2022 flooded the lower Indus plain.",
+    "polarizationNote": "VV backscatter drops sharply over calm open water (specular reflection), so flooded fields turn dark.",
+    "howToRead": "Blue = backscatter decreased after the event → likely new standing water. Red = increase.",
+    "caveats": "Wind-roughened water and radar shadow can mimic or hide change."
+  },
+  "credits": ["Contains modified Copernicus Sentinel data 2022, processed by ASF HyP3"],
+  "order": 2
+}

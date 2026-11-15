@@ -1,0 +1,5 @@
+{
+  "messages": [ { "role": "user", "content": "Why is the flooded area blue in the Pakistan story?" } ],
+  "context": { "types": ["flood"], "from": 2000, "to": 2026, "selectedIncidentId": 612004, "storyId": "pakistan-2022-flood" },
+  "stream": false
+}

@@ -1,0 +1,13 @@
+{
+  "datasetVersion": 42,
+  "updatedAt": "2026-11-16T09:12:00Z",
+  "minYear": 1900,
+  "maxYear": 2026,
+  "features": { "chat": false, "stories": true, "grid": true, "sar": true },
+  "coverage": [
+    { "type": "earthquake", "fromYear": 1900, "toYear": 2026, "sources": ["usgs", "noaa_eq"], "note": "USGS M≥4.5; catalog incomplete before ~1973" },
+    { "type": "flood", "fromYear": 1985, "toYear": 2026, "sources": ["dfo", "gdacs"], "note": "DFO 1985–2021, GDACS 2022→" },
+    { "type": "landslide", "fromYear": 1988, "toYear": 2026, "sources": ["glc", "eonet"], "note": "NASA GLC 1988–2017, EONET 2018→ (sparse)" },
+    { "type": "fire_activity", "fromYear": 2000, "toYear": 2026, "sources": ["firms"], "note": "MODIS active-fire detections (not events)" }
+  ]
+}

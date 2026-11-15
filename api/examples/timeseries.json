@@ -1,0 +1,7 @@
+{
+  "types": ["storm"],
+  "iso3": "PHL",
+  "unit": "incidents",
+  "points": [ { "year": 1980, "n": 21 }, { "year": 1981, "n": 24 }, { "year": 1982, "n": 19 }, { "year": 1983, "n": 18 } ],
+  "datasetVersion": 42
+}
