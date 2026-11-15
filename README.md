@@ -16,12 +16,12 @@ Go 1.26+ API (`cmd/api`) and ingest CLI (`cmd/ingest`) for the NASA Space Apps 2
 | A2 | `store/postgres` read side | ⏳ needs Mohammed's M1–M3 (migrations + seed) |
 | **A3** | Cube (prefix sums) + breaks + `StatsService` (reload on version change) + **E2 meta, E3 incident-types, E4 choropleth, E5 timeseries** (ETag/304, Cache-Control); dev fixture reader `internal/store/fixture` (`STATS_FIXTURE`) | ✅ done (awaiting review). Real data after A2 |
 | A4 | E7 incidents, E8 detail, E9 search | ⏳ after A2 |
-| A5 | ASF client + E10 sar, E11 coverage-timeline | ⏳ |
+| **A5** | `external/asf` client (verified against live ASF), `SARService` (era rule, per-mission parallel search, split/bestPair, LRU → sar_cache → ASF with singleflight, stale fallback) + **E10 `/incidents/{id}/sar`, E11 `/sar/coverage-timeline`**; dev `INCIDENTS_FIXTURE` + in-memory SAR cache | ✅ done (awaiting review). DB cache + real incidents after A2 |
 | A6 | E12/E13 stories, E14 media | ⏳ needs M14 (stories loader) |
 | A7–A11, A13 | ETag wiring, grid, prewarm, deploy, perf, hardening | ⏳ |
 | A12 | AI chat (**ADDITIONAL — NOT REQUIRED**) | ⏳ only after S7 go |
 
-Right now E1–E5 are live (E2/E4/E5 need a data source: `STATS_FIXTURE` today, the DB after A2; otherwise **503 `not_ready`**, while E3 always works). E6–E14 answer **501 `not_implemented`** in the standard error JSON. `POST /api/v1/chat` answers
+Right now E1–E5, E10 and E11 are live (E2/E4/E5 need a data source: `STATS_FIXTURE` today, the DB after A2; otherwise **503 `not_ready`**, while E3 always works). E6–E9 and E12–E14 answer **501 `not_implemented`** in the standard error JSON. `POST /api/v1/chat` answers
 **503 `chat_disabled`**. Use `api/examples/*.json` as mocks for the real shapes.
 
 ## Run the API locally (Windows)
@@ -60,6 +60,20 @@ curl -s "localhost:8080/api/v1/stats/timeseries?types=storm&from=1980&to=1983&is
 curl -s -i -H 'If-None-Match: <ETag from the previous response>' "localhost:8080/api/v1/stats/choropleth?types=earthquake,flood&from=1950&to=2000"   # → 304
 ```
 
+### Try the SAR drill-down (E10/E11) with dev fixtures (calls the real ASF API)
+```bash
+STATS_FIXTURE=testdata/stats_fixture.json INCIDENTS_FIXTURE=testdata/incidents_fixture.json go run ./cmd/api
+curl -s localhost:8080/api/v1/incidents/500812/sar                    # Türkiye 2023, Sentinel-1 → ok + bestPair
+curl -s localhost:8080/api/v1/incidents/700001/sar                    # Aomori 2025-12-08, Sentinel-1 + NISAR GCOV
+curl -s localhost:8080/api/v1/incidents/300101/sar                    # Haiti 2010, ALOS
+curl -s localhost:8080/api/v1/incidents/400101/sar                    # Bohol 2013 → none (2011–2014 gap, no ASF call)
+curl -s localhost:8080/api/v1/incidents/118233/sar                    # Pinatubo 1991 → pre_sar_era (no ASF call)
+curl -s "localhost:8080/api/v1/incidents/500812/sar?windowDays=20&refresh=true"
+curl -s localhost:8080/api/v1/sar/coverage-timeline
+```
+Fixture incident ids: 500812, 700001, 700002 (Venezuela 2026), 300101, 400101, 118233, 612004 (Pakistan flood 2022, box search).
+Live ASF test: `ASF_LIVE=1 go test ./internal/external/asf -run Live -v`.
+
 ### Build, vet, test (no `make` needed)
 ```bash
 go build ./...
@@ -89,6 +103,8 @@ api prewarm-sar --top 200     # task A9, currently prints "not implemented yet"
 | `MIN_YEAR` | `1900` | |
 | `CUBE_RELOAD_INTERVAL` | `60s` | Used from A3 |
 | `STATIC_DIR` | *(empty)* | Serve the frontend build (later) |
+| `INCIDENTS_FIXTURE` | *(empty)* | **DEV-ONLY** incidents for E10 until A2 (e.g. `testdata/incidents_fixture.json`) |
+| `ASF_ALOS_LEVEL` | `L1.5` | ALOS processingLevel (verified live) |
 | `STATS_FIXTURE` | *(empty)* | **DEV-ONLY** JSON fixture for E2–E5 until A2 (e.g. `testdata/stats_fixture.json`) |
 | `STORIES_DIR` | `./data/stories` | Used from A6 |
 | `ASF_BASE_URL` | `https://api.daac.asf.alaska.edu/services/search/param` | Used from A5 |
@@ -107,7 +123,10 @@ internal/store/store.go                 persistence interfaces (A0, contract)
 internal/config/                        env config + SAR mission era table (A1)
 internal/httpapi/                       router, middleware, errors, params, DTOs, /healthz (A1), E2–E5 handlers (A3)
 internal/service/                       Cube, Breaks, StatsService (A3)
-internal/store/fixture/                 DEV-ONLY StatsReader from JSON (A3, replaced by store/postgres in A2)
+internal/store/fixture/                 DEV-ONLY StatsReader + IncidentReader(GetIncident) from JSON (A3/A5, replaced by store/postgres in A2)
+internal/store/memory/                  in-memory SARCache for no-DB mode (A5)
+internal/external/asf/                  ASF Search API client (A5)
+testdata/fixtures/asf_*.json            REAL trimmed ASF responses (S1 Türkiye, NISAR Aomori, Seasat)
 testdata/stats_fixture.json             synthetic stats fixture (not real data)
 internal/platform/                      slog + http.Client (M0 file, see HANDOFF_TO_MOHAMMED.md)
 ```

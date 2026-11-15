@@ -1,0 +1,60 @@
+{
+  "_comment": "DEV-ONLY incidents for the SAR drill-down before the DB exists (A2). USGS ids, times and coordinates verified live 2026-11-15. The Pinatubo (noaa_vo) and Pakistan flood (dfo) source ids are placeholders that match api/examples. Not a dataset.",
+  "incidents": [
+    {
+      "id": 500812, "source": "usgs", "sourceId": "us6000jllz", "type": "earthquake",
+      "title": "M 7.8 - Pazarcik earthquake, Kahramanmaras earthquake sequence",
+      "startTime": "2023-02-06T01:17:34Z", "timePrecision": "second", "year": 2023,
+      "lon": 37.0143, "lat": 37.2256, "magnitude": 7.8, "magnitudeUnit": "Mww", "severity": 3,
+      "primaryIso3": "TUR", "countries": ["TUR", "SYR"],
+      "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000jllz", "props": { "depthKm": 10 }
+    },
+    {
+      "id": 700001, "source": "usgs", "sourceId": "us6000rtdt", "type": "earthquake",
+      "title": "M 7.6 - 2025 Aomori Prefecture, Japan Earthquake",
+      "startTime": "2025-12-08T14:15:09Z", "timePrecision": "second", "year": 2025,
+      "lon": 142.1836, "lat": 40.9984, "magnitude": 7.6, "magnitudeUnit": "Mww", "severity": 2,
+      "primaryIso3": "JPN", "countries": ["JPN"],
+      "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000rtdt", "props": { "depthKm": 40.72, "alert": "yellow" }
+    },
+    {
+      "id": 700002, "source": "usgs", "sourceId": "us6000t7zp", "type": "earthquake",
+      "title": "M 7.5 - 20 km W of Catia La Mar, Venezuela",
+      "startTime": "2026-06-24T22:05:04Z", "timePrecision": "second", "year": 2026,
+      "lon": -67.2205, "lat": 10.5955, "magnitude": 7.5, "magnitudeUnit": "Mww", "severity": 3,
+      "primaryIso3": "VEN", "countries": ["VEN"],
+      "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000t7zp", "props": { "depthKm": 10, "alert": "red" }
+    },
+    {
+      "id": 300101, "source": "usgs", "sourceId": "usp000h60h", "type": "earthquake",
+      "title": "M 7.0 - 10 km SE of Léogâne, Haiti",
+      "startTime": "2010-01-12T21:53:10Z", "timePrecision": "second", "year": 2010,
+      "lon": -72.571, "lat": 18.443, "magnitude": 7.0, "magnitudeUnit": "Mw", "severity": 3,
+      "primaryIso3": "HTI", "countries": ["HTI"],
+      "url": "https://earthquake.usgs.gov/earthquakes/eventpage/usp000h60h", "props": { "depthKm": 13 }
+    },
+    {
+      "id": 400101, "source": "usgs", "sourceId": "usb000kdb4", "type": "earthquake",
+      "title": "M 7.1 - 4 km SE of Sagbayan, Philippines (Bohol)",
+      "startTime": "2013-10-15T00:12:32Z", "timePrecision": "second", "year": 2013,
+      "lon": 124.1167, "lat": 9.8796, "magnitude": 7.1, "magnitudeUnit": "Mw", "severity": 3,
+      "primaryIso3": "PHL", "countries": ["PHL"],
+      "url": "https://earthquake.usgs.gov/earthquakes/eventpage/usb000kdb4", "props": { "depthKm": 19.04 }
+    },
+    {
+      "id": 118233, "source": "noaa_vo", "sourceId": "273", "type": "volcano",
+      "title": "Pinatubo eruption (VEI 6)", "name": "Pinatubo",
+      "startTime": "1991-06-15T00:00:00Z", "timePrecision": "day", "year": 1991,
+      "lon": 120.35, "lat": 15.13, "magnitude": 6, "magnitudeUnit": "VEI", "severity": 3, "deaths": 847,
+      "primaryIso3": "PHL", "countries": ["PHL"],
+      "url": "https://www.ngdc.noaa.gov/hazel/view/hazards/volcano/event-more-info/273", "props": { "elevationM": 1486 }
+    },
+    {
+      "id": 612004, "source": "dfo", "sourceId": "5000", "type": "flood",
+      "title": "Monsoon flood, Pakistan (2022)",
+      "startTime": "2022-08-25T00:00:00Z", "timePrecision": "day", "year": 2022,
+      "lon": 68.25, "lat": 27.0, "severity": 3,
+      "primaryIso3": "PAK", "countries": ["PAK"], "props": {}
+    }
+  ]
+}

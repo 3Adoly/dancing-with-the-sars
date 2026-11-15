@@ -141,8 +141,8 @@ func TestErrorShapeOnUnknownRouteAndMethod(t *testing.T) {
 
 func TestNotImplementedAndChatDisabled(t *testing.T) {
 	h := testRouter(nil)
-	for _, p := range []string{"/api/v1/incidents", "/api/v1/stats/grid", "/api/v1/incidents/1/sar",
-		"/api/v1/stories", "/api/v1/sar/coverage-timeline", "/media/stories/x/a.png"} {
+	for _, p := range []string{"/api/v1/incidents", "/api/v1/stats/grid", "/api/v1/incidents/1",
+		"/api/v1/stories", "/media/stories/x/a.png"} {
 		rec := do(t, h, http.MethodGet, p, nil)
 		if rec.Code != http.StatusNotImplemented || decodeError(t, rec).Error.Code != CodeNotImplemented {
 			t.Errorf("%s: %d %s", p, rec.Code, rec.Body)
