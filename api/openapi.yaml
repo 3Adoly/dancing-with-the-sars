@@ -15,8 +15,8 @@ info:
     - Every 4xx/5xx uses the `Error` schema.
     - Country keys are Natural Earth **ADM0_A3** codes.
 servers:
-  - url: http://164.92.235.173:8090
-    description: Live team server (fixture mode until the database lands; E6–E9 answer 501 for now)
+  - url: https://164.92.235.173:8443
+    description: Live team server (HTTPS, real data; E6 grid answers 501)
   - url: http://localhost:8080
     description: Local dev
 tags:

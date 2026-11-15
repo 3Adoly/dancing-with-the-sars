@@ -1,5 +1,5 @@
 # Deployment on the SHARED team server (164.92.235.173). Other projects use 80/443, 5432, 5435, 5437, 8080, 8081, …
-# This stack publishes only:  API → 0.0.0.0:8090   |   PostGIS → 127.0.0.1:5440 (admin only, not public)
+# This stack publishes only:  HTTPS API → 0.0.0.0:8443 (Caddy) | 8090 → redirect to HTTPS | PostGIS → 127.0.0.1:5440 (admin only)
 # Every container is memory/CPU capped so it cannot starve the other projects. Never prune anything on this server.
 #
 #   cd /opt/dancing-with-the-sars && git pull --ff-only
@@ -43,7 +43,7 @@ services:
     image: dwts-api:${VERSION:-dev}
     container_name: dwts-api
     restart: unless-stopped
-    ports: ["8090:8080"]                 # host 8090 (8080/8081 belong to other apps) → container 8080
+    expose: ["8080"]                     # reachable only through the HTTPS proxy (service "proxy")
     environment:
       HTTP_ADDR: ":8080"
       LOG_FORMAT: json
@@ -61,6 +61,21 @@ services:
     security_opt: ["no-new-privileges:true"]
     logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
 
+  proxy:
+    image: caddy:2.10.2-alpine
+    container_name: dwts-proxy
+    restart: unless-stopped
+    ports: ["8443:8443", "8090:8090"]   # 80/443 belong to Apache (other projects)
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ../tls/acme/164.92.235.173_ecc:/certs:ro     # acme.sh output (never committed; see .gitignore)
+      - dwts_caddy:/data
+    depends_on: [api]
+    mem_limit: 64m
+    cpus: 0.25
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
+
 volumes:
+  dwts_caddy: {}
   dwts_pgdata: {}
   dwts_data: {}

@@ -120,16 +120,16 @@ api prewarm-sar --top 200     # task A9, currently prints "not implemented yet"
 
 ## Live deployment (team server)
 
-The API runs at **http://164.92.235.173:8090** (e.g. [`/healthz`](http://164.92.235.173:8090/healthz),
-[`/api/v1/meta`](http://164.92.235.173:8090/api/v1/meta)). It runs on **real data**:
+The API runs at **https://164.92.235.173:8443** (e.g. [`/healthz`](https://164.92.235.173:8443/healthz),
+[`/api/v1/meta`](https://164.92.235.173:8443/api/v1/meta)). It runs on **real data**:
 - **Database:** PostgreSQL + PostGIS loaded by `cmd/ingest` with USGS, NOAA NCEI, NASA GLC, DFO, GDACS, EONET and IBTrACS (about 100k incidents).
 - **Radar search:** live from ASF.
 - **Stories:** the real change-detection stories in `data/stories`.
 - **Working endpoints:** all of E1–E5 and E7–E14. E6 (grid) returns 501 and chat is disabled (optional).
 
-Try it: [Pinatubo search](http://164.92.235.173:8090/api/v1/search?q=pinatubo) ·
-[floods 1985–2021 by country](http://164.92.235.173:8090/api/v1/stats/choropleth?types=flood&from=1985&to=2021) ·
-[stories](http://164.92.235.173:8090/api/v1/stories).
+Try it: [Pinatubo search](https://164.92.235.173:8443/api/v1/search?q=pinatubo) ·
+[floods 1985–2021 by country](https://164.92.235.173:8443/api/v1/stats/choropleth?types=flood&from=1985&to=2021) ·
+[stories](https://164.92.235.173:8443/api/v1/stories).
 
 - **How it runs:** a Docker container `dwts-api` built from `Dockerfile.api` (distroless, non-root, read-only), defined by
   [`deploy/compose.server.yml`](deploy/compose.server.yml). Host port **8090** maps to container port 8080, with a 256 MB memory cap
@@ -138,7 +138,7 @@ Try it: [Pinatubo search](http://164.92.235.173:8090/api/v1/search?q=pinatubo) �
 - **Redeploy** after merging to `main` (needs SSH access as root):
   ```bash
   ssh root@164.92.235.173 'cd /opt/dancing-with-the-sars && git pull --ff-only && VERSION=$(git rev-parse --short HEAD) docker compose -f deploy/compose.server.yml up -d --build'
-  BASE_URL=http://164.92.235.173:8090 bash scripts/smoke.sh      # expect FAIL=0
+  BASE_URL=https://164.92.235.173:8443 bash scripts/smoke.sh      # expect FAIL=0
   ```
 - **Logs:** `ssh root@164.92.235.173 docker logs --tail 50 dwts-api`
 - **Next:** when the DB lands (M1–M3, then A2), add a `postgis` service on a free localhost-only port (5432 and 5435 are taken), set

@@ -1,0 +1,18 @@
+# TLS terminator for the API on the shared team server.
+# 80/443 belong to Apache (other projects), so HTTPS is served on 8443.
+# Certificate: Let's Encrypt IP-address cert ("shortlived" profile, ~6 days), issued and renewed by acme.sh
+# through Apache's default webroot. See deploy/README-https.md. Caddy is reloaded by the renewal cron.
+{
+	auto_https off
+}
+
+:8443 {
+	tls /certs/fullchain.cer /certs/164.92.235.173.key
+	reverse_proxy api:8080
+	header Strict-Transport-Security "max-age=86400"
+}
+
+# Old plain-HTTP port: permanent redirect to HTTPS.
+:8090 {
+	redir https://164.92.235.173:8443{uri} 308
+}

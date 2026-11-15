@@ -34,9 +34,9 @@ TEMPLATE = """<!doctype html>
 <body>
   <div class="dwts-banner">
     <strong>Dancing with the SARs: API for the frontend</strong> · NASA Space Apps 2026<br>
-    Live server: <a href="http://164.92.235.173:8090/healthz">http://164.92.235.173:8090</a>
-    (choose it in <em>Servers</em>, then <em>Try it out</em>). Status today: E1–E5 and E10–E14 work; E6–E9 answer
-    <code>501</code> until the database lands; <code>/chat</code> is optional and disabled (<code>503</code>).
+    Live server: <a href="https://164.92.235.173:8443/healthz">https://164.92.235.173:8443</a>
+    (HTTPS; choose it in <em>Servers</em>, then <em>Try it out</em>). Status: all endpoints work on real data except
+    E6 grid (<code>501</code>); <code>/chat</code> is optional and disabled (<code>503</code>).
     Example responses: <code>api/examples/*.json</code> in the repo.
   </div>
   <div id="dwts-error"></div>
