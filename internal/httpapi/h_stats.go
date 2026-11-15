@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/dwts/backend/internal/domain"
 )
@@ -80,10 +81,6 @@ func (h *handlers) incidentTypes(w http.ResponseWriter, r *http.Request) {
 
 // choropleth is E4.
 func (h *handlers) choropleth(w http.ResponseWriter, r *http.Request) {
-	st, ok := h.statsReady(w, r)
-	if !ok {
-		return
-	}
 	q := r.URL.Query()
 	types, err := parseTypes(q, true)
 	if err == nil {
@@ -93,7 +90,11 @@ func (h *handlers) choropleth(w http.ResponseWriter, r *http.Request) {
 		writeError(w, r, err)
 		return
 	}
-	minY, maxY := st.YearBounds()
+	// Validate input first (400 regardless of readiness), then require a loaded cube.
+	minY, maxY := 1900, time.Now().UTC().Year()
+	if h.d.Stats != nil {
+		minY, maxY = h.d.Stats.YearBounds()
+	}
 	years, err := parseYearRange(q, minY, maxY)
 	if err != nil {
 		writeError(w, r, err)
@@ -101,6 +102,10 @@ func (h *handlers) choropleth(w http.ResponseWriter, r *http.Request) {
 	}
 	if lvl := strings.TrimSpace(q.Get("level")); lvl != "" && lvl != "country" {
 		writeError(w, r, BadParam("level", "level must be country"))
+		return
+	}
+	st, ok := h.statsReady(w, r)
+	if !ok {
 		return
 	}
 	if CheckETag(w, r, MakeETag(st.Version(), "choropleth", CanonicalQuery(q)), ccChoropleth) {
@@ -116,10 +121,6 @@ func (h *handlers) choropleth(w http.ResponseWriter, r *http.Request) {
 
 // timeseries is E5.
 func (h *handlers) timeseries(w http.ResponseWriter, r *http.Request) {
-	st, ok := h.statsReady(w, r)
-	if !ok {
-		return
-	}
 	q := r.URL.Query()
 	types, err := parseTypes(q, true)
 	if err == nil {
@@ -129,7 +130,11 @@ func (h *handlers) timeseries(w http.ResponseWriter, r *http.Request) {
 		writeError(w, r, err)
 		return
 	}
-	minY, maxY := st.YearBounds()
+	// Validate input first (400 regardless of readiness), then require a loaded cube.
+	minY, maxY := 1900, time.Now().UTC().Year()
+	if h.d.Stats != nil {
+		minY, maxY = h.d.Stats.YearBounds()
+	}
 	years, err := parseYearRange(q, minY, maxY)
 	if err != nil {
 		writeError(w, r, err)
@@ -138,6 +143,10 @@ func (h *handlers) timeseries(w http.ResponseWriter, r *http.Request) {
 	iso := strings.ToUpper(strings.TrimSpace(q.Get("iso3")))
 	if iso != "" && !validISO3(iso) {
 		writeError(w, r, BadParam("iso3", "iso3 must be a 3-letter ADM0_A3 code"))
+		return
+	}
+	st, ok := h.statsReady(w, r)
+	if !ok {
 		return
 	}
 	if CheckETag(w, r, MakeETag(st.Version(), "timeseries", CanonicalQuery(q)), ccTimeseries) {
