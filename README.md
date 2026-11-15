@@ -121,8 +121,15 @@ api prewarm-sar --top 200     # task A9, currently prints "not implemented yet"
 ## Live deployment (team server)
 
 The API runs at **http://164.92.235.173:8090** (e.g. [`/healthz`](http://164.92.235.173:8090/healthz),
-[`/api/v1/meta`](http://164.92.235.173:8090/api/v1/meta)). For now it runs in **fixture mode**: there's no database, and
-it serves the dev data in `testdata/`. ASF radar search is live.
+[`/api/v1/meta`](http://164.92.235.173:8090/api/v1/meta)). It runs on **real data**:
+- **Database:** PostgreSQL + PostGIS loaded by `cmd/ingest` with USGS, NOAA NCEI, NASA GLC, DFO, GDACS, EONET and IBTrACS (about 100k incidents).
+- **Radar search:** live from ASF.
+- **Stories:** the real change-detection stories in `data/stories`.
+- **Working endpoints:** all of E1–E5 and E7–E14. E6 (grid) returns 501 and chat is disabled (optional).
+
+Try it: [Pinatubo search](http://164.92.235.173:8090/api/v1/search?q=pinatubo) ·
+[floods 1985–2021 by country](http://164.92.235.173:8090/api/v1/stats/choropleth?types=flood&from=1985&to=2021) ·
+[stories](http://164.92.235.173:8090/api/v1/stories).
 
 - **How it runs:** a Docker container `dwts-api` built from `Dockerfile.api` (distroless, non-root, read-only), defined by
   [`deploy/compose.server.yml`](deploy/compose.server.yml). Host port **8090** maps to container port 8080, with a 256 MB memory cap
