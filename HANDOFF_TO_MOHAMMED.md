@@ -25,3 +25,17 @@ shared skeleton. **These are M0 files. You own them from now on and may change t
 Notes:
 - `DATABASE_URL` has **no default** in config. An empty value means the API runs without a DB (`/healthz` reports `db:"not_configured"`). `.env.example` sets the docker value.
 - `domain.Story` / `StoryLayer` already include the optional per-layer `platform` / `polarization` (SAOCOM story 5). Your `stories.Validate` implements the cross-platform and CONAE-credit rules of Detailed §10.1.
+
+## A6 → M14: stories loader swap (added by Ahmed's side)
+
+`service.StoryService` takes a `StoryLoader func() ([]domain.Story, error)`. Until your `internal/stories` exists,
+`cmd/api` uses a **temporary** loader (`cmd/api/stories_temp.go`). It reads `<STORIES_DIR>/manifest.json`, checks
+ids are unique/valid and that files exist with safe names, rewrites file names to `/media/stories/<id>/<file>`,
+and sorts by `order`. When M14 lands:
+1. In `cmd/api/main.go` replace `storyLoader := tempStoryLoader(cfg.StoriesDir)` with
+   `storyLoader := func() ([]domain.Story, error) { return stories.Load(cfg.StoriesDir) }`.
+2. Delete `cmd/api/stories_temp.go` and `cmd/api/stories_temp_test.go`.
+3. Your `stories.Load` must return the **same shape**: URLs rewritten to `/media/stories/<id>/<file>`, sorted by order.
+   It may return valid stories plus an error listing the bad ones (the API logs it and serves the valid ones).
+4. Your `stories-validate` should pass on `testdata/stories` (2 PLACEHOLDER stories, incl. the SAOCOM+NISAR two-sensor
+   example with per-layer `platform` and the CONAE credit). Real content goes to `data/stories` (Ibrahim).
