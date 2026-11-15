@@ -8,14 +8,14 @@
 
 ## 0. One-time setup
 
-1. **Accept the invitation.** Ahmed adds your GitHub account as a collaborator. Open the e-mail from GitHub (or https://github.com/notifications) and click **Accept**. Without it you cannot push branches.
+1. **Accept the invitation.** Ahmed has invited your GitHub account **Mohammed19N** as a collaborator. Open the e-mail from GitHub (or https://github.com/notifications) and click **Accept**. Without it you cannot push branches.
 2. **Install the tools:**
    - **Git:** Git for Windows. It includes Git Credential Manager: the first `git push` opens a browser window where *you* sign in to GitHub. Never put a password or token in a file or a command.
    - **Go 1.26 or newer:** `go.mod` says `go 1.26.0`. Ahmed uses 1.27.4. On Windows: `winget install GoLang.Go`.
    - **Docker Desktop:** for PostgreSQL 17 + PostGIS (your M0/M1).
 3. **Clone and set your identity:**
    ```bash
-   git clone https://github.com/<OWNER>/dancing-with-the-sars.git
+   git clone https://github.com/3Adoly/dancing-with-the-sars.git
    cd dancing-with-the-sars
    git config user.name  "Mohammed <family name>"
    git config user.email "<your GitHub e-mail or the id+username@users.noreply.github.com address>"
@@ -53,7 +53,7 @@ git push -u origin mohammed/M1-migrations
 ```
 
 ### Create the pull request
-- **Web (simplest):** after the push, git prints a link like `https://github.com/<OWNER>/dancing-with-the-sars/pull/new/mohammed/M1-migrations`. Open it, check that **base = `main`** and **compare = your branch**, fill in the template (it loads automatically from `.github/pull_request_template.md`), and click **Create pull request**.
+- **Web (simplest):** after the push, git prints a link like `https://github.com/3Adoly/dancing-with-the-sars/pull/new/mohammed/M1-migrations`. Open it, check that **base = `main`** and **compare = your branch**, fill in the template (it loads automatically from `.github/pull_request_template.md`), and click **Create pull request**.
 - **GitHub CLI (optional):** `gh pr create --base main --title "M1: goose migrations 0001-0006" --body-file pr.md`. Sign in first with `gh auth login`, which you do yourself in the browser.
 - **Title format:** `M<n>: <what it does>`. One task ID per PR. Contract changes use the title prefix `contract:`.
 - **Reviewer:** Ahmed. He squash-merges. After the merge:
