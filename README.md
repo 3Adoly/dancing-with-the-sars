@@ -1,3 +1,10 @@
+## Repository branches
+- **`main`**: the **backend** (Go API + data ingest), which this README describes.
+- **`frontend`**: the **frontend** web app (React + MapLibre) in the `frontend/` folder. See [`frontend/README.md`](https://github.com/3Adoly/dancing-with-the-sars/blob/frontend/frontend/README.md).
+
+Live API: https://164.92.235.173:8443
+
+
 # Dancing with the SARs: Backend (Go)
 
 Go 1.26+ API (`cmd/api`) and ingest CLI (`cmd/ingest`) for the NASA Space Apps 2026 challenge
