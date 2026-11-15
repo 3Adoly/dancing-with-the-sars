@@ -1,8 +1,12 @@
 # Dancing with the SARs: Backend (Go)
 
 Go 1.26+ API (`cmd/api`) and ingest CLI (`cmd/ingest`) for the NASA Space Apps 2026 challenge
-"Dancing with the SARs". The plans live one folder up: `../Plan_High_Level.md`, `../Plan_Middle_Level.md`,
-`../Plan_Detailed_Level.md` (source of truth), `../Plan_Collaboration.md`, `../Mohammed_Guide.md`.
+"Dancing with the SARs": an interactive Earth map of natural incidents with NISAR / Sentinel-1 radar
+before/after views and change-detection Stories.
+
+- **System overview (UML, one page):** [`docs/00-Overview-UML.drawio`](docs/00-Overview-UML.drawio). Open it with draw.io / diagrams.net.
+- **Contributing (Mohammed and his AI agent):** [`MOHAMMED_CONTRIBUTING.md`](MOHAMMED_CONTRIBUTING.md) and [`HANDOFF_TO_MOHAMMED.md`](HANDOFF_TO_MOHAMMED.md).
+- The detailed team plans are shared privately with the team and are not part of this repo.
 
 - API contract: [`api/openapi.yaml`](api/openapi.yaml). Mock responses for the frontend: [`api/examples/`](api/examples).
 - No cgo anywhere (`CGO_ENABLED=0` works). Dependencies: chi v5, go-chi/cors, pgx v5, godotenv.
@@ -11,14 +15,14 @@ Go 1.26+ API (`cmd/api`) and ingest CLI (`cmd/ingest`) for the NASA Space Apps 2
 
 | Task | What | Status |
 |---|---|---|
-| **A0** | Contract: `internal/domain`, `internal/store/store.go`, `api/openapi.yaml`, `api/examples/*.json` (E1–E15) | ✅ done (awaiting review) |
-| **A1** | `cmd/api` (serve + graceful shutdown, `prewarm-sar` stub), `internal/config` (+ SAR mission table), `internal/httpapi` (router, middleware, errors, params, ETag helper), **E1 `/healthz`** | ✅ done (awaiting review) |
+| **A0** | Contract: `internal/domain`, `internal/store/store.go`, `api/openapi.yaml`, `api/examples/*.json` (E1–E15) | ✅ done |
+| **A1** | `cmd/api` (serve + graceful shutdown, `prewarm-sar` stub), `internal/config` (+ SAR mission table), `internal/httpapi` (router, middleware, errors, params, ETag helper), **E1 `/healthz`** | ✅ done |
 | A2 | `store/postgres` read side | ⏳ needs Mohammed's M1–M3 (migrations + seed) |
-| **A3** | Cube (prefix sums) + breaks + `StatsService` (reload on version change) + **E2 meta, E3 incident-types, E4 choropleth, E5 timeseries** (ETag/304, Cache-Control); dev fixture reader `internal/store/fixture` (`STATS_FIXTURE`) | ✅ done (awaiting review). Real data after A2 |
+| **A3** | Cube (prefix sums) + breaks + `StatsService` (reload on version change) + **E2 meta, E3 incident-types, E4 choropleth, E5 timeseries** (ETag/304, Cache-Control); dev fixture reader `internal/store/fixture` (`STATS_FIXTURE`) | ✅ done. Real data after A2 |
 | A4 | E7 incidents, E8 detail, E9 search | ⏳ after A2 |
-| **A5** | `external/asf` client (verified against live ASF), `SARService` (era rule, per-mission parallel search, split/bestPair, LRU → sar_cache → ASF with singleflight, stale fallback) + **E10 `/incidents/{id}/sar`, E11 `/sar/coverage-timeline`**; dev `INCIDENTS_FIXTURE` + in-memory SAR cache | ✅ done (awaiting review). DB cache + real incidents after A2 |
-| **A6** | `StoryService` (List/Get/MediaPath/ForIncident → `storyId` in E10) + **E12 `/stories`, E13 `/stories/{id}`, E14 `/media/stories/{id}/{file}`** (ETag, immutable media, traversal-safe); TEMPORARY loader `cmd/api/stories_temp.go` until M14; placeholder stories in `testdata/stories` | ✅ done (awaiting review). Swap in `stories.Load` when M14 lands |
-| **A7** | HTTP hardening: router-level contract test over every route (status, Content-Type, Cache-Control per §8.2, ETag/304, X-Request-Id, error JSON, HEAD), CORS preflight/expose tests, gzip only ≥ 1 KB + `Vary`, HEAD support, 504 on request timeout, query guard (≤ 4 KB, valid UTF-8 → else 400), params validated before readiness; `scripts/smoke.sh` + `scripts/smoke.ps1` | ✅ done (awaiting review) |
+| **A5** | `external/asf` client (verified against live ASF), `SARService` (era rule, per-mission parallel search, split/bestPair, LRU → sar_cache → ASF with singleflight, stale fallback) + **E10 `/incidents/{id}/sar`, E11 `/sar/coverage-timeline`**; dev `INCIDENTS_FIXTURE` + in-memory SAR cache | ✅ done. DB cache + real incidents after A2 |
+| **A6** | `StoryService` (List/Get/MediaPath/ForIncident → `storyId` in E10) + **E12 `/stories`, E13 `/stories/{id}`, E14 `/media/stories/{id}/{file}`** (ETag, immutable media, traversal-safe); TEMPORARY loader `cmd/api/stories_temp.go` until M14; placeholder stories in `testdata/stories` | ✅ done. Swap in `stories.Load` when M14 lands |
+| **A7** | HTTP hardening: router-level contract test over every route (status, Content-Type, Cache-Control per §8.2, ETag/304, X-Request-Id, error JSON, HEAD), CORS preflight/expose tests, gzip only ≥ 1 KB + `Vary`, HEAD support, 504 on request timeout, query guard (≤ 4 KB, valid UTF-8 → else 400), params validated before readiness; `scripts/smoke.sh` + `scripts/smoke.ps1` | ✅ done |
 | A8–A11, A13 | grid, prewarm, deploy, perf, hardening | ⏳ |
 | A12 | AI chat (**ADDITIONAL — NOT REQUIRED**) | ⏳ only after S7 go |
 
