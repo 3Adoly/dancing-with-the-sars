@@ -3,7 +3,6 @@ package fixture
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
@@ -12,7 +11,7 @@ import (
 )
 
 // ErrNotImplemented is returned by the fixture for queries that need the real DB (A2/A4).
-var ErrNotImplemented = errors.New("fixture: not implemented (needs the database, task A2)")
+var ErrNotImplemented = fmt.Errorf("fixture: needs the database: %w", domain.ErrNotImplemented)
 
 // IncidentsFile is the JSON layout of testdata/incidents_fixture.json.
 type IncidentsFile struct {

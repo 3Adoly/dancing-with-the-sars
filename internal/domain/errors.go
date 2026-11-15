@@ -10,4 +10,5 @@ var (
 	ErrUpstreamTimeout = errors.New("upstream timeout")
 	ErrDisabled        = errors.New("feature disabled")
 	ErrNotReady        = errors.New("not ready")
+	ErrNotImplemented  = errors.New("not implemented yet") // feature/task not built → HTTP 501
 )

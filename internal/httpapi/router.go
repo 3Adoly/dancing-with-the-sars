@@ -25,10 +25,11 @@ type Deps struct {
 	RequestTimeout time.Duration
 	StartedAt      time.Time
 	Version        string
-	ChatEnabled    bool       // ADDITIONAL — NOT REQUIRED (A12)
-	Stats          StatsAPI   // nil = no stats service (E2/E4/E5 → 503, E3 static)
-	SAR            SARAPI     // nil = E10/E11 → 503
-	Stories        StoriesAPI // nil = no stories (E12 empty list, E13/E14 404)
+	ChatEnabled    bool         // ADDITIONAL — NOT REQUIRED (A12)
+	Stats          StatsAPI     // nil = no stats service (E2/E4/E5 → 503, E3 static)
+	SAR            SARAPI       // nil = E10/E11 → 503
+	Stories        StoriesAPI   // nil = no stories (E12 empty list, E13/E14 404)
+	Incidents      IncidentsAPI // nil = E7–E9 → 503
 }
 
 // NewRouter builds the full HTTP handler.
@@ -69,9 +70,9 @@ func NewRouter(d Deps) http.Handler {
 		r.Get("/stats/choropleth", h.choropleth)               // E4
 		r.Get("/stats/timeseries", h.timeseries)               // E5
 		r.Get("/stats/grid", notImplemented("A8"))             // E6
-		r.Get("/incidents", notImplemented("A4"))              // E7
-		r.Get("/incidents/{id}", notImplemented("A4"))         // E8
-		r.Get("/search", notImplemented("A4"))                 // E9
+		r.Get("/incidents", h.incidents)                       // E7
+		r.Get("/incidents/{id}", h.incident)                   // E8
+		r.Get("/search", h.search)                             // E9
 		r.Get("/incidents/{id}/sar", h.incidentSAR)            // E10
 		r.Get("/sar/coverage-timeline", h.sarCoverageTimeline) // E11
 		r.Get("/stories", h.stories)                           // E12
