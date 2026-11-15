@@ -1,0 +1,8 @@
+-- +goose Up
+-- 0001_extensions.sql
+CREATE EXTENSION IF NOT EXISTS postgis;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- +goose Down
+DROP EXTENSION IF EXISTS pg_trgm;
+DROP EXTENSION IF EXISTS postgis;
