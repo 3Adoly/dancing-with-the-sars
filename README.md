@@ -118,6 +118,25 @@ api serve
 api prewarm-sar --top 200     # task A9, currently prints "not implemented yet"
 ```
 
+## Live deployment (team server)
+
+The API runs at **http://164.92.235.173:8090** (e.g. [`/healthz`](http://164.92.235.173:8090/healthz),
+[`/api/v1/meta`](http://164.92.235.173:8090/api/v1/meta)). For now it runs in **fixture mode**: there's no database, and
+it serves the dev data in `testdata/`. ASF radar search is live.
+
+- **How it runs:** a Docker container `dwts-api` built from `Dockerfile.api` (distroless, non-root, read-only), defined by
+  [`deploy/compose.server.yml`](deploy/compose.server.yml). Host port **8090** maps to container port 8080, with a 256 MB memory cap
+  and `restart: unless-stopped`. The server is shared with other projects: never use ports 80/443/5432/8080/8081, and never
+  prune Docker images or caches there.
+- **Redeploy** after merging to `main` (needs SSH access as root):
+  ```bash
+  ssh root@164.92.235.173 'cd /opt/dancing-with-the-sars && git pull --ff-only && VERSION=$(git rev-parse --short HEAD) docker compose -f deploy/compose.server.yml up -d --build'
+  BASE_URL=http://164.92.235.173:8090 bash scripts/smoke.sh      # expect FAIL=0
+  ```
+- **Logs:** `ssh root@164.92.235.173 docker logs --tail 50 dwts-api`
+- **Next:** when the DB lands (M1–M3, then A2), add a `postgis` service on a free localhost-only port (5432 and 5435 are taken), set
+  `DATABASE_URL`, and remove the `*_FIXTURE` variables.
+
 ## Environment variables (API)
 
 | Var | Default | Notes |
