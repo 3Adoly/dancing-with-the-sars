@@ -17,8 +17,8 @@ import (
 
 const (
 	baseID = "demo-test"
-	// repoStories is the committed stories directory, relative to this package.
-	repoStories = "../../data/stories"
+	// repoStories is the committed placeholder stories directory (real stories in data/stories are checked by `ingest stories-validate`), relative to this package.
+	repoStories = "../../testdata/stories_validate"
 )
 
 var bboxAll = [4]float64{30, 36, 38, 38}

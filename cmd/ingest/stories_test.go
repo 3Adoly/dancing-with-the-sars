@@ -18,11 +18,11 @@ func storiesCfg(dir string) func() (config.Config, error) {
 	}
 }
 
-// copyStories copies the committed data/stories (manifest and small images)
+// copyStories copies the committed testdata/stories_validate (manifest and small images)
 // into a temp dir so a test can break it.
 func copyStories(t *testing.T) string {
 	t.Helper()
-	src := filepath.Join("..", "..", "data", "stories")
+	src := filepath.Join("..", "..", "testdata", "stories_validate")
 	dst := t.TempDir()
 	err := filepath.WalkDir(src, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -48,7 +48,7 @@ func TestStoriesValidate(t *testing.T) {
 	t.Run("committed stories are valid without a database", func(t *testing.T) {
 		var stderr bytes.Buffer
 		code := run(context.Background(), []string{"stories-validate"}, &stderr,
-			storiesCfg(filepath.Join("..", "..", "data", "stories")))
+			storiesCfg(filepath.Join("..", "..", "testdata", "stories_validate")))
 		if code != 0 {
 			t.Fatalf("exit code = %d, want 0 (stderr: %s)", code, stderr.String())
 		}

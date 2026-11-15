@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "stories": [
+    {
+      "id": "demo-placeholder",
+      "order": 90,
+      "title": "Demo placeholder: Türkiye earthquake",
+      "summary": "Placeholder story with solid-colour images so the stories pipeline can be tested before the real data arrives.",
+      "type": "earthquake",
+      "incidentSource": "usgs",
+      "incidentSourceId": "us6000jllz",
+      "place": "Kahramanmaraş, Türkiye",
+      "iso3": "TUR",
+      "bbox": [30.0, 36.0, 38.0, 38.0],
+      "center": [34.0, 37.0],
+      "zoom": 6.5,
+      "eventDate": "2023-02-06",
+      "beforeDate": "2023-01-25",
+      "afterDate": "2023-02-18",
+      "platform": "Sentinel-1",
+      "band": "C",
+      "polarization": "VV",
+      "product": "Placeholder (no real SAR data)",
+      "thumbnail": "thumb.jpg",
+      "layers": [
+        { "kind": "before", "url": "before.png", "bounds": [30.0, 36.0, 38.0, 38.0], "date": "2023-01-25" },
+        { "kind": "after", "url": "after.png", "bounds": [30.0, 36.0, 38.0, 38.0], "date": "2023-02-18" },
+        {
+          "kind": "change",
+          "url": "change.png",
+          "bounds": [30.0, 36.0, 38.0, 38.0],
+          "legend": {
+            "type": "diverging",
+            "min": -6,
+            "max": 6,
+            "unit": "dB",
+            "lowLabel": "decrease",
+            "highLabel": "increase",
+            "colors": ["#2166ac", "#f7f7f7", "#b2182b"]
+          }
+        }
+      ],
+      "explanation": {
+        "driver": "Placeholder text. The real story will describe the physical driver of the event.",
+        "polarizationNote": "Placeholder text. The real story will say which polarization shows the change and why.",
+        "howToRead": "Placeholder text. Blue is the before image, green the after image, and the blue to red gradient stands in for a change layer.",
+        "caveats": "These images are solid colours generated for pipeline tests. They contain no radar data."
+      },
+      "credits": ["Placeholder imagery generated for pipeline testing. Not real SAR data."]
+    },
+    {
+      "id": "demo-two-sensors",
+      "order": 91,
+      "title": "Demo placeholder: two sensors",
+      "summary": "Placeholder cross-sensor swipe, SAOCOM-1A before and NISAR after, with no change layer.",
+      "type": "flood",
+      "place": "Salado basin, Argentina",
+      "iso3": "ARG",
+      "bbox": [-61.0, -33.0, -59.0, -31.0],
+      "center": [-60.0, -32.0],
+      "zoom": 7.5,
+      "eventDate": "2026-01-15",
+      "beforeDate": "2026-01-12",
+      "afterDate": "2026-01-18",
+      "platform": "SAOCOM-1A + NISAR",
+      "band": "L",
+      "polarization": "HV",
+      "product": "Placeholder (no real SAR data)",
+      "thumbnail": "thumb.jpg",
+      "layers": [
+        { "kind": "before", "url": "before_saocom.png", "bounds": [-61.0, -33.0, -59.0, -31.0], "date": "2026-01-12", "platform": "SAOCOM-1A" },
+        { "kind": "after", "url": "after_nisar.png", "bounds": [-61.0, -33.0, -59.0, -31.0], "date": "2026-01-18", "platform": "NISAR" }
+      ],
+      "explanation": {
+        "driver": "Placeholder text. The real story will describe the physical driver of the event.",
+        "polarizationNote": "Placeholder text. Both radars are L-band, so both see through vegetation canopy.",
+        "howToRead": "Placeholder text. Swipe between the SAOCOM-1A image (orange) and the NISAR image (purple). This is a visual comparison of two sensors, not a computed change.",
+        "caveats": "Two different sensors are never differenced: this story has no change layer on purpose."
+      },
+      "credits": [
+        "Producto SAOCOM® - ©CONAE - 2026. Todos los derechos reservados",
+        "Placeholder imagery generated for pipeline testing. Not real SAR data."
+      ]
+    }
+  ]
+}
