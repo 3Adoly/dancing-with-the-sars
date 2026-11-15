@@ -24,7 +24,6 @@ Thumbs.db
 
 # SDD / agent scratch
 .superpowers/
-.claude/
 
 # TLS keys/certs on the server (acme.sh)
 tls/

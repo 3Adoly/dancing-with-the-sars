@@ -9,4 +9,3 @@ data/boundaries/
 *.md
 !README.md
 .superpowers/
-.claude/
