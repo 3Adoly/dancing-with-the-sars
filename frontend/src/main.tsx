@@ -1,9 +1,15 @@
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { setWorkerUrl } from 'maplibre-gl'
+import mapWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { toast } from 'sonner'
 import App from './App.tsx'
 import './index.css'
+
+// MapLibre builds its worker file name at runtime, so Vite can't see it and
+// leaves it out of the production build. Import it explicitly so it ships.
+setWorkerUrl(mapWorkerUrl)
 
 const onError = (error: Error) => {
   if (error.name === 'AbortError') return
