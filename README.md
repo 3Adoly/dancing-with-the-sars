@@ -140,6 +140,7 @@ Try it: [Pinatubo search](https://164.92.235.173:8443/api/v1/search?q=pinatubo) 
   ssh root@164.92.235.173 'cd /opt/dancing-with-the-sars && git pull --ff-only && VERSION=$(git rev-parse --short HEAD) docker compose -f deploy/compose.server.yml up -d --build'
   BASE_URL=https://164.92.235.173:8443 bash scripts/smoke.sh      # expect FAIL=0
   ```
+- **HTTPS:** a Caddy container (`deploy/Caddyfile`) terminates TLS on **8443** with a Let's Encrypt **IP-address certificate** ("shortlived" profile, about 6 days). Plain-HTTP port 8090 answers `308` to HTTPS, and the API container has no published port. The certificate is issued and renewed by `acme.sh` (Docker) through Apache's default webroot, so Apache is not reconfigured. Cron `/etc/cron.d/dwts-cert` runs twice a day, renews when < 3 days remain, then reloads Caddy (log `/var/log/dwts-cert.log`). Keys live in `tls/` on the server (git-ignored).
 - **Logs:** `ssh root@164.92.235.173 docker logs --tail 50 dwts-api`
 - **Next:** when the DB lands (M1–M3, then A2), add a `postgis` service on a free localhost-only port (5432 and 5435 are taken), set
   `DATABASE_URL`, and remove the `*_FIXTURE` variables.
