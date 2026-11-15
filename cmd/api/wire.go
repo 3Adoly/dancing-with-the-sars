@@ -14,6 +14,7 @@ import (
 	"github.com/dwts/backend/internal/store"
 	"github.com/dwts/backend/internal/store/fixture"
 	"github.com/dwts/backend/internal/store/memory"
+	"github.com/dwts/backend/internal/store/postgres"
 	"github.com/dwts/backend/internal/stories"
 )
 
@@ -44,7 +45,14 @@ func buildDeps(ctx context.Context, cfg config.Config, log *slog.Logger, pool *p
 		log.Warn("DEV: serving stats from a fixture file, not the database", "path", cfg.StatsFixture)
 		statsReader = fr
 	}
-	// TODO(A2): else if deps.DB != nil { statsReader = postgres.NewReader(pool) }
+	// A2: with a database (and no fixture), the Postgres read side serves stats, incidents and the SAR cache.
+	var pg *postgres.DB
+	if pool != nil {
+		pg = &postgres.DB{Pool: pool, Log: log}
+	}
+	if statsReader == nil && pg != nil {
+		statsReader = pg
+	}
 	// SAR (A5). Incidents: INCIDENTS_FIXTURE (dev-only) until the Postgres reader lands in A2.
 	// Cache: in-memory until store/postgres sarcache.go (A2).
 	var incidents store.IncidentReader
@@ -56,8 +64,13 @@ func buildDeps(ctx context.Context, cfg config.Config, log *slog.Logger, pool *p
 		log.Warn("DEV: serving incidents from a fixture file, not the database", "path", cfg.IncidentsFixture, "incidents", fi.Len())
 		incidents = fi
 	}
-	// TODO(A2): else if deps.DB != nil { incidents = postgres reader; sarCache = postgres sar_cache }
 	var sarCache store.SARCache = memory.NewSARCache()
+	if pg != nil {
+		if incidents == nil {
+			incidents = pg
+		}
+		sarCache = pg // sar_cache table (survives restarts)
+	}
 	// Stories (A6). TEMPORARY loader until M14 (stories.Load) — see stories_temp.go.
 	storyLoader := func() ([]domain.Story, error) { return stories.Load(cfg.StoriesDir) }
 	storySvc, err := service.NewStoryService(ctx, storyLoader, cfg.StoriesDir, incidents, log)
@@ -71,6 +84,7 @@ func buildDeps(ctx context.Context, cfg config.Config, log *slog.Logger, pool *p
 		WindowDays: cfg.SARWindowDays, MemTTL: cfg.SARCacheTTL, DBFresh: cfg.SARDBFresh, ASFTimeout: cfg.ASFTimeout, Log: log,
 	})
 	deps.SAR = sar
+	deps.Incidents = service.NewIncidentService(incidents, storySvc, sar)
 
 	features := map[string]bool{"chat": deps.ChatEnabled, "stories": storySvc.Len() > 0, "grid": false, "sar": incidents != nil}
 	stats := service.NewStatsService(statsReader, nil, cfg.MinYear, features, log)

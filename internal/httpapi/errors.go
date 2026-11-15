@@ -70,6 +70,8 @@ func toAPIError(err error) *APIError {
 		return &APIError{Status: http.StatusBadGateway, Code: CodeUpstreamError, Message: "an upstream service failed"}
 	case errors.Is(err, domain.ErrDisabled):
 		return &APIError{Status: http.StatusServiceUnavailable, Code: CodeChatDisabled, Message: "this feature is disabled"}
+	case errors.Is(err, domain.ErrNotImplemented):
+		return &APIError{Status: http.StatusNotImplemented, Code: CodeNotImplemented, Message: "not available in this deployment yet (needs the database)"}
 	case errors.Is(err, domain.ErrNotReady):
 		return &APIError{Status: http.StatusServiceUnavailable, Code: CodeNotReady, Message: "the service is starting, try again shortly"}
 	default:
@@ -89,6 +91,7 @@ func writeError(w http.ResponseWriter, r *http.Request, err error) {
 		loggerFrom(r.Context()).Error("request failed", "path", r.URL.Path, "status", ae.Status, "code", ae.Code, "err", err)
 	}
 	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Del("ETag") // an ETag may have been set before the failure; errors are never cacheable
 	writeJSON(w, ae.Status, ErrorBody{
 		Error:     ErrorDetail{Code: ae.Code, Message: ae.Message, Details: ae.Details},
 		RequestID: RequestIDFrom(r.Context()),
