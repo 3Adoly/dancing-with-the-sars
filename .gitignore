@@ -21,3 +21,7 @@ data/boundaries/
 *.swp
 .DS_Store
 Thumbs.db
+
+# SDD / agent scratch
+.superpowers/
+.claude/

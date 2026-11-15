@@ -1,0 +1,622 @@
+{
+ "title": "EONET Events",
+ "description": "Natural events from EONET.",
+ "link": "https://eonet.gsfc.nasa.gov/api/v3/events",
+ "events": [
+  {
+   "id": "EONET_6412",
+   "title": "Hurricane Idalia",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6412",
+   "closed": "2023-09-06T00:00:00Z",
+   "categories": [
+    {
+     "id": "severeStorms",
+     "title": "Severe Storms"
+    }
+   ],
+   "sources": [
+    {
+     "id": "GDACS",
+     "url": "https://www.gdacs.org/report.aspx?eventid=1001000&episodeid=7&eventtype=TC"
+    },
+    {
+     "id": "NOAA_NHC",
+     "url": "https://www.nhc.noaa.gov/archive/2023/IDALIA.shtml"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": 35.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-27T15:15:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.8,
+      19.9
+     ]
+    },
+    {
+     "magnitudeValue": 35.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-27T18:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.8,
+      20
+     ]
+    },
+    {
+     "magnitudeValue": 35.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-27T21:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.5,
+      20.1
+     ]
+    },
+    {
+     "magnitudeValue": 40.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-28T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.4,
+      20.1
+     ]
+    },
+    {
+     "magnitudeValue": 50.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-28T03:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.3,
+      19.8
+     ]
+    },
+    {
+     "magnitudeValue": 50.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-28T06:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.3,
+      19.7
+     ]
+    },
+    {
+     "magnitudeValue": 55.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-28T09:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.2,
+      20.1
+     ]
+    },
+    {
+     "magnitudeValue": 55.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-28T12:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.2,
+      20.6
+     ]
+    },
+    {
+     "magnitudeValue": 55.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-28T15:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.2,
+      20.8
+     ]
+    },
+    {
+     "magnitudeValue": 60.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-28T18:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.1,
+      21.2
+     ]
+    },
+    {
+     "magnitudeValue": 60.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-28T21:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.1,
+      21.4
+     ]
+    },
+    {
+     "magnitudeValue": 60.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-29T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85.1,
+      21.7
+     ]
+    },
+    {
+     "magnitudeValue": 60.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-29T03:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85,
+      22
+     ]
+    },
+    {
+     "magnitudeValue": 60.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-29T06:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85,
+      22.6
+     ]
+    },
+    {
+     "magnitudeValue": 65.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-29T09:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -85,
+      23.1
+     ]
+    },
+    {
+     "magnitudeValue": 70.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-29T12:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -84.8,
+      23.8
+     ]
+    },
+    {
+     "magnitudeValue": 75.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-29T15:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -84.8,
+      24.6
+     ]
+    },
+    {
+     "magnitudeValue": 80.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-29T18:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -84.9,
+      25.2
+     ]
+    },
+    {
+     "magnitudeValue": 85.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-29T21:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -84.8,
+      26.1
+     ]
+    },
+    {
+     "magnitudeValue": 90.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-30T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -84.7,
+      26.9
+     ]
+    },
+    {
+     "magnitudeValue": 95.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-30T03:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -84.5,
+      27.7
+     ]
+    },
+    {
+     "magnitudeValue": 105.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-30T06:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -84.5,
+      28.3
+     ]
+    },
+    {
+     "magnitudeValue": 115.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-30T09:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -84.1,
+      29.1
+     ]
+    },
+    {
+     "magnitudeValue": 105.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-30T12:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -83.5,
+      29.9
+     ]
+    },
+    {
+     "magnitudeValue": 80.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-30T15:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -83.2,
+      30.6
+     ]
+    },
+    {
+     "magnitudeValue": 65.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-30T18:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -82.5,
+      31.4
+     ]
+    },
+    {
+     "magnitudeValue": 60.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-30T21:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -81.7,
+      32.2
+     ]
+    },
+    {
+     "magnitudeValue": 55.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-31T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -80.9,
+      32.7
+     ]
+    },
+    {
+     "magnitudeValue": 50.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-31T03:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -80,
+      33
+     ]
+    },
+    {
+     "magnitudeValue": 50.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-31T06:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -79.1,
+      33.5
+     ]
+    },
+    {
+     "magnitudeValue": 50.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-31T09:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -78,
+      33.6
+     ]
+    },
+    {
+     "magnitudeValue": 50.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-31T12:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -77,
+      33.7
+     ]
+    },
+    {
+     "magnitudeValue": 50.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-31T15:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -75.8,
+      33.6
+     ]
+    },
+    {
+     "magnitudeValue": 55.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-08-31T21:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -73.5,
+      33.5
+     ]
+    },
+    {
+     "magnitudeValue": 55.0,
+     "magnitudeUnit": "kts",
+     "date": "2023-09-01T03:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      -71.5,
+      33.1
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_6563",
+   "title": "Tiger Island Wildfire, Beauregard, Louisiana",
+   "description": "E of Merryville, LA, S of Hwy 190, SW of Deridder, LA N of Singer",
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6563",
+   "closed": "2023-10-25T00:00:00Z",
+   "categories": [
+    {
+     "id": "wildfires",
+     "title": "Wildfires"
+    }
+   ],
+   "sources": [
+    {
+     "id": "IRWIN",
+     "url": "https://irwin.doi.gov/observer/"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": 31290.0,
+     "magnitudeUnit": "acres",
+     "date": "2023-08-22T15:51:00Z",
+     "type": "Point",
+     "coordinates": [
+      -93.4385,
+      30.6728
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_6471",
+   "title": "Heard Volcano, Australia",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6471",
+   "closed": "2024-01-26T00:00:00Z",
+   "categories": [
+    {
+     "id": "volcanoes",
+     "title": "Volcanoes"
+    }
+   ],
+   "sources": [
+    {
+     "id": "SIVolcano",
+     "url": "https://volcano.si.edu/volcano.cfm?vn=234010"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": null,
+     "magnitudeUnit": null,
+     "date": "2023-12-29T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      73.513,
+      -53.106
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_4089",
+   "title": "Iceberg C36",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_4089",
+   "closed": null,
+   "categories": [
+    {
+     "id": "seaLakeIce",
+     "title": "Sea and Lake Ice"
+    }
+   ],
+   "sources": [
+    {
+     "id": "NATICE",
+     "url": "https://usicecenter.gov/pub/Iceberg_Tabular.csv"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": null,
+     "magnitudeUnit": null,
+     "date": "2019-02-11T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      147.83,
+      -68.13
+     ]
+    },
+    {
+     "magnitudeValue": 368.0,
+     "magnitudeUnit": "NM^2",
+     "date": "2026-03-13T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      147.04,
+      -67.76
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_25820",
+   "title": "Flood in Germany 1104257",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_25820",
+   "closed": "2026-10-26T00:00:00Z",
+   "categories": [
+    {
+     "id": "floods",
+     "title": "Floods"
+    }
+   ],
+   "sources": [
+    {
+     "id": "GDACS",
+     "url": "https://www.gdacs.org/report.aspx?eventtype=FL&eventid=1104257"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": null,
+     "magnitudeUnit": null,
+     "date": "2026-10-25T20:00:00Z",
+     "type": "Polygon",
+     "coordinates": [
+      [
+       [
+        7.4086637,
+        54.0068062
+       ],
+       [
+        7.5000001,
+        54.0197601
+       ],
+       [
+        7.549833,
+        54.0268
+       ],
+       [
+        7.4484651,
+        54.1378463
+       ],
+       [
+        7.408728,
+        54.1357002
+       ],
+       [
+        7.4086637,
+        54.0068062
+       ]
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_16759",
+   "title": "Wildfire in Sudan 1026554",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_16759",
+   "closed": "2025-12-31T00:00:00Z",
+   "categories": [
+    {
+     "id": "wildfires",
+     "title": "Wildfires"
+    }
+   ],
+   "sources": [
+    {
+     "id": "GDACS",
+     "url": "https://www.gdacs.org/report.aspx?eventtype=WF&eventid=1026554"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": 5492.0,
+     "magnitudeUnit": "hectare",
+     "date": "2025-12-31T19:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      31.963817594235127,
+      7.736244321481467
+     ]
+    }
+   ]
+  },
+  {
+   "id": "EONET_999001",
+   "title": "Heard Volcano, Australia",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6471",
+   "closed": "2024-01-26T00:00:00Z",
+   "categories": [
+    {
+     "id": "volcanoes",
+     "title": "Volcanoes"
+    }
+   ],
+   "sources": [
+    {
+     "id": "SIVolcano",
+     "url": "https://volcano.si.edu/volcano.cfm?vn=234010"
+    }
+   ],
+   "geometry": []
+  },
+  {
+   "id": "EONET_999002",
+   "title": "Hand-edited dust haze",
+   "description": null,
+   "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_6471",
+   "closed": "2024-01-26T00:00:00Z",
+   "categories": [
+    {
+     "id": "dustHaze",
+     "title": "Dust and Haze"
+    }
+   ],
+   "sources": [
+    {
+     "id": "SIVolcano",
+     "url": "https://volcano.si.edu/volcano.cfm?vn=234010"
+    }
+   ],
+   "geometry": [
+    {
+     "magnitudeValue": null,
+     "magnitudeUnit": null,
+     "date": "2023-12-29T00:00:00Z",
+     "type": "Point",
+     "coordinates": [
+      73.513,
+      -53.106
+     ]
+    }
+   ]
+  }
+ ]
+}

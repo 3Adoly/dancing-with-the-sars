@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgis/postgis:17-3.5-alpine
+    environment: { POSTGRES_USER: dwts, POSTGRES_PASSWORD: dwts, POSTGRES_DB: dwts }
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    command: ["postgres","-c","shared_buffers=512MB","-c","work_mem=32MB","-c","maintenance_work_mem=256MB","-c","max_wal_size=256MB","-c","min_wal_size=64MB"]
+    # -h 127.0.0.1 (TCP): during first-boot init the entrypoint's temporary server listens on the unix socket only,
+    # so a socket check goes healthy too early and `make test-db` / `ingest migrate` hit "database system is shutting down".
+    healthcheck: { test: ["CMD-SHELL","pg_isready -h 127.0.0.1 -U dwts -d dwts"], interval: 3s, retries: 30 }
+  api:
+    build: { context: ., dockerfile: Dockerfile.api }
+    profiles: ["api"]              # docker compose --profile api up -d api (Dockerfile.api is Ahmed's)
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://dwts:dwts@db:5432/dwts?sslmode=disable
+      STORIES_DIR: /app/data/stories
+      LOG_FORMAT: json
+    volumes: ["./data/stories:/app/data/stories:ro"]
+    ports: ["8080:8080"]
+    depends_on: { db: { condition: service_healthy } }
+    restart: unless-stopped
+  ingest:
+    build: { context: ., dockerfile: Dockerfile.ingest }
+    profiles: ["tools"]            # docker compose run --rm ingest run --all
+    env_file: .env
+    environment: { DATABASE_URL: "postgres://dwts:dwts@db:5432/dwts?sslmode=disable" }
+    volumes: ["./data:/app/data"]
+    depends_on: { db: { condition: service_healthy } }
+volumes: { pgdata: {} }
