@@ -119,6 +119,9 @@ type Incident struct {
 	Track           json.RawMessage `json:"track,omitempty"`           // GeoJSON LineString (storms; detail only)
 	TrackWKT        string          `json:"-"`                         // ingest only
 	Raw             json.RawMessage `json:"-"`                         // ingest only
+	PlaceText       string          `json:"-"`                         // ingest only: place/country text folded into SearchText
+	SearchText      string          `json:"-"`                         // ingest only: set by ingest.Finalize
+	RawHash         string          `json:"-"`                         // ingest only: skips no-op upserts
 	SARAvailability string          `json:"sarAvailability,omitempty"` // detail only: searchable | pre_sar_era | gap
 	StoryID         string          `json:"storyId,omitempty"`         // detail only
 }
