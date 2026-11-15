@@ -24,17 +24,18 @@ const (
 
 // incidentSAR is E10 GET /api/v1/incidents/{id}/sar?windowDays=&refresh=.
 func (h *handlers) incidentSAR(w http.ResponseWriter, r *http.Request) {
-	if h.d.SAR == nil {
-		writeError(w, r, errNotReady())
-		return
-	}
+	// Validate input first: a bad request is 400 whether or not the service is available.
 	id, err := parseID(chi.URLParam(r, "id"))
 	if err != nil {
 		writeError(w, r, err)
 		return
 	}
 	q := r.URL.Query()
-	window, err := parseIntRange(q, "windowDays", h.d.SAR.DefaultWindowDays(), 1, 180)
+	defWindow := 45
+	if h.d.SAR != nil {
+		defWindow = h.d.SAR.DefaultWindowDays()
+	}
+	window, err := parseIntRange(q, "windowDays", defWindow, 1, 180)
 	if err != nil {
 		writeError(w, r, err)
 		return
@@ -42,6 +43,10 @@ func (h *handlers) incidentSAR(w http.ResponseWriter, r *http.Request) {
 	refresh, err := parseBool(q, "refresh", false)
 	if err != nil {
 		writeError(w, r, err)
+		return
+	}
+	if h.d.SAR == nil {
+		writeError(w, r, errNotReady())
 		return
 	}
 	res, err := h.d.SAR.ForIncidentWindow(r.Context(), id, window, refresh)

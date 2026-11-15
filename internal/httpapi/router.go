@@ -49,7 +49,10 @@ func NewRouter(d Deps) http.Handler {
 	r.Use(Logger(d.Log))
 	r.Use(Recover)
 	r.Use(CORS(d.CORSOrigins))
-	r.Use(Compress())
+	r.Use(middleware.GetHead) // HEAD on every GET route
+	r.Use(HeadNoBody)
+	r.Use(QueryGuard)
+	r.Use(Gzip(GzipMinBytes))
 	r.Use(Timeout(d.RequestTimeout))
 	r.NotFound(handleNotFound)
 	r.MethodNotAllowed(handleMethodNotAllowed)

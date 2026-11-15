@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"errors"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -206,11 +208,61 @@ func TestCORS(t *testing.T) {
 	}
 }
 
-func TestGzip(t *testing.T) {
-	h := testRouter(nil)
-	rec := do(t, h, http.MethodGet, "/api/v1/meta", map[string]string{"Accept-Encoding": "gzip"})
-	if rec.Header().Get("Content-Encoding") != "gzip" {
-		t.Errorf("expected gzip, got %q", rec.Header().Get("Content-Encoding"))
+func TestMain(m *testing.M) {
+	slog.SetDefault(slog.New(slog.NewTextHandler(io.Discard, nil))) // quiet routers built without a logger
+	os.Exit(m.Run())
+}
+
+func TestGzipThresholdAndNegotiation(t *testing.T) {
+	big := strings.Repeat("x", 2000)
+	h := Gzip(GzipMinBytes)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/big":
+			writeJSON(w, 200, map[string]string{"v": big})
+		case "/small":
+			writeJSON(w, 200, map[string]string{"v": "x"})
+		case "/png":
+			w.Header().Set("Content-Type", "image/png")
+			_, _ = w.Write([]byte(big))
+		case "/304":
+			w.WriteHeader(http.StatusNotModified)
+		case "/chunks": // many small writes that cross the threshold
+			w.Header().Set("Content-Type", "application/json")
+			for i := 0; i < 300; i++ {
+				_, _ = w.Write([]byte("0123456789"))
+			}
+		}
+	}))
+	cases := []struct {
+		path, ae string
+		gz       bool
+		status   int
+	}{
+		{"/big", "gzip, deflate, br", true, 200},
+		{"/chunks", "gzip", true, 200},
+		{"/big", "", false, 200},
+		{"/big", "gzip;q=0", false, 200},
+		{"/big", "br, gzip;q=0.5", true, 200},
+		{"/small", "gzip", false, 200},
+		{"/png", "gzip", false, 200},
+		{"/304", "gzip", false, 304},
+	}
+	for _, c := range cases {
+		rec := do(t, h, http.MethodGet, c.path, map[string]string{"Accept-Encoding": c.ae})
+		got := rec.Header().Get("Content-Encoding") == "gzip"
+		if got != c.gz || rec.Code != c.status || !strings.Contains(strings.Join(rec.Header().Values("Vary"), ","), "Accept-Encoding") {
+			t.Errorf("%s (%q): gzip=%v status=%d vary=%q", c.path, c.ae, got, rec.Code, rec.Header().Get("Vary"))
+		}
+		if c.gz {
+			zr, err := gzip.NewReader(rec.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			b, _ := io.ReadAll(zr)
+			if len(b) < 1024 {
+				t.Errorf("%s: decompressed %d bytes", c.path, len(b))
+			}
+		}
 	}
 }
 

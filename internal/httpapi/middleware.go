@@ -1,9 +1,11 @@
 package httpapi
 
 import (
+	"compress/gzip"
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"hash/fnv"
 	"log/slog"
@@ -11,8 +13,10 @@ import (
 	"net/url"
 	"runtime/debug"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -106,16 +110,61 @@ func Recover(next http.Handler) http.Handler {
 	})
 }
 
-// Timeout puts a deadline on the request context. Handlers and stores must honour ctx;
-// a context.DeadlineExceeded error is mapped to 504 upstream_timeout by writeError.
+// Timeout puts a deadline on the request context. Handlers and stores must honour ctx; a
+// context.DeadlineExceeded error is mapped to 504 upstream_timeout by writeError. If a handler
+// returns after the deadline without writing anything, the middleware writes that 504 itself.
 func Timeout(d time.Duration) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx, cancel := context.WithTimeout(r.Context(), d)
 			defer cancel()
-			next.ServeHTTP(w, r.WithContext(ctx))
+			ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
+			next.ServeHTTP(ww, r.WithContext(ctx))
+			if errors.Is(ctx.Err(), context.DeadlineExceeded) && ww.Status() == 0 && ww.BytesWritten() == 0 {
+				writeError(w, r.WithContext(context.WithoutCancel(ctx)), context.DeadlineExceeded)
+			}
 		})
 	}
+}
+
+// HeadNoBody drops the body of HEAD responses (headers, status and cache headers are kept).
+// net/http already discards it on the wire; this also saves the encoding work and keeps
+// in-process callers (tests, recorders) honest.
+func HeadNoBody(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodHead {
+			w = headWriter{w}
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+type headWriter struct{ http.ResponseWriter }
+
+func (h headWriter) Write(p []byte) (int, error) { return len(p), nil }
+
+// MaxQueryBytes caps the raw query string; longer queries get 400 invalid_param.
+const MaxQueryBytes = 4096
+
+// QueryGuard rejects oversized query strings and query strings that are not valid UTF-8
+// with 400 invalid_param, before any handler parses them.
+func QueryGuard(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		raw := r.URL.RawQuery
+		if len(raw) > MaxQueryBytes {
+			writeError(w, r, &APIError{Status: http.StatusBadRequest, Code: CodeInvalidParam,
+				Message: fmt.Sprintf("query string too long (max %d bytes)", MaxQueryBytes)})
+			return
+		}
+		if raw != "" {
+			if dec, err := url.QueryUnescape(raw); err != nil || !utf8.ValidString(dec) {
+				writeError(w, r, &APIError{Status: http.StatusBadRequest, Code: CodeInvalidParam,
+					Message: "query string is not valid percent-encoded UTF-8"})
+				return
+			}
+		}
+		next.ServeHTTP(w, r)
+	})
 }
 
 // CORS allows the configured origins (GET/POST/OPTIONS) and exposes ETag + X-Request-ID.
@@ -130,9 +179,137 @@ func CORS(origins []string) func(http.Handler) http.Handler {
 	})
 }
 
-// Compress gzips JSON/text responses (level 5).
-func Compress() func(http.Handler) http.Handler {
-	return middleware.Compress(5, "application/json", "text/plain", "application/yaml")
+// GzipMinBytes is the smallest response body that gets gzipped (Plan_Detailed §8.1: "gzip when >1 KB").
+const GzipMinBytes = 1024
+
+var gzipTypes = []string{"application/json", "text/plain", "application/yaml", "text/csv"}
+
+// Gzip compresses JSON/text responses of at least minBytes when the client sends
+// Accept-Encoding: gzip. Images, partial (206) responses, 304s and small bodies pass through.
+// It always adds "Vary: Accept-Encoding" so caches keep both variants apart.
+func Gzip(minBytes int) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Vary", "Accept-Encoding")
+			if !acceptsGzip(r) || r.Method == http.MethodHead {
+				next.ServeHTTP(w, r)
+				return
+			}
+			gw := &gzipWriter{rw: w, min: minBytes}
+			defer func() {
+				if p := recover(); p != nil {
+					panic(p) // let Recover answer; never flush a half-built response
+				}
+				gw.finish()
+			}()
+			next.ServeHTTP(gw, r)
+		})
+	}
+}
+
+func acceptsGzip(r *http.Request) bool {
+	for _, part := range strings.Split(r.Header.Get("Accept-Encoding"), ",") {
+		enc, params, _ := strings.Cut(strings.TrimSpace(part), ";")
+		if !strings.EqualFold(strings.TrimSpace(enc), "gzip") {
+			continue
+		}
+		for _, p := range strings.Split(params, ";") {
+			if k, v, ok := strings.Cut(strings.TrimSpace(p), "="); ok && strings.EqualFold(k, "q") {
+				q, err := strconv.ParseFloat(strings.TrimSpace(v), 64)
+				return err == nil && q > 0
+			}
+		}
+		return true
+	}
+	return false
+}
+
+// gzipWriter buffers the first minBytes, then decides once whether to compress.
+type gzipWriter struct {
+	rw      http.ResponseWriter
+	min     int
+	status  int
+	buf     []byte
+	decided bool
+	gz      *gzip.Writer
+}
+
+func (g *gzipWriter) Header() http.Header { return g.rw.Header() }
+
+func (g *gzipWriter) WriteHeader(code int) {
+	if g.status == 0 {
+		g.status = code
+	}
+	// Bodyless statuses cannot be compressed: decide immediately.
+	if code == http.StatusNotModified || code == http.StatusNoContent || code < 200 {
+		g.decide(false)
+	}
+}
+
+func (g *gzipWriter) Write(p []byte) (int, error) {
+	if g.status == 0 {
+		g.status = http.StatusOK
+	}
+	if g.decided {
+		if g.gz != nil {
+			return g.gz.Write(p)
+		}
+		return g.rw.Write(p)
+	}
+	g.buf = append(g.buf, p...)
+	if len(g.buf) >= g.min {
+		g.decide(true)
+	}
+	return len(p), nil
+}
+
+func (g *gzipWriter) decide(bigEnough bool) {
+	if g.decided {
+		return
+	}
+	g.decided = true
+	if g.status == 0 {
+		g.status = http.StatusOK
+	}
+	h := g.rw.Header()
+	if bigEnough && compressible(h) && g.status != http.StatusPartialContent {
+		h.Del("Content-Length")
+		h.Set("Content-Encoding", "gzip")
+		g.rw.WriteHeader(g.status)
+		g.gz, _ = gzip.NewWriterLevel(g.rw, 5)
+		_, _ = g.gz.Write(g.buf)
+	} else {
+		g.rw.WriteHeader(g.status)
+		if len(g.buf) > 0 {
+			_, _ = g.rw.Write(g.buf)
+		}
+	}
+	g.buf = nil
+}
+
+func (g *gzipWriter) finish() {
+	if !g.decided {
+		if g.status == 0 && len(g.buf) == 0 {
+			return // handler wrote nothing; let net/http send its default
+		}
+		g.decide(false)
+	}
+	if g.gz != nil {
+		_ = g.gz.Close()
+	}
+}
+
+func compressible(h http.Header) bool {
+	if h.Get("Content-Encoding") != "" || h.Get("Content-Range") != "" {
+		return false
+	}
+	ct := strings.ToLower(h.Get("Content-Type"))
+	for _, t := range gzipTypes {
+		if strings.HasPrefix(ct, t) {
+			return true
+		}
+	}
+	return false
 }
 
 // --- ETag helpers (Plan_Detailed §12) ---

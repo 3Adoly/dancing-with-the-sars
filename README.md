@@ -18,7 +18,8 @@ Go 1.26+ API (`cmd/api`) and ingest CLI (`cmd/ingest`) for the NASA Space Apps 2
 | A4 | E7 incidents, E8 detail, E9 search | ⏳ after A2 |
 | **A5** | `external/asf` client (verified against live ASF), `SARService` (era rule, per-mission parallel search, split/bestPair, LRU → sar_cache → ASF with singleflight, stale fallback) + **E10 `/incidents/{id}/sar`, E11 `/sar/coverage-timeline`**; dev `INCIDENTS_FIXTURE` + in-memory SAR cache | ✅ done (awaiting review). DB cache + real incidents after A2 |
 | **A6** | `StoryService` (List/Get/MediaPath/ForIncident → `storyId` in E10) + **E12 `/stories`, E13 `/stories/{id}`, E14 `/media/stories/{id}/{file}`** (ETag, immutable media, traversal-safe); TEMPORARY loader `cmd/api/stories_temp.go` until M14; placeholder stories in `testdata/stories` | ✅ done (awaiting review). Swap in `stories.Load` when M14 lands |
-| A7–A11, A13 | ETag wiring, grid, prewarm, deploy, perf, hardening | ⏳ |
+| **A7** | HTTP hardening: router-level contract test over every route (status, Content-Type, Cache-Control per §8.2, ETag/304, X-Request-Id, error JSON, HEAD), CORS preflight/expose tests, gzip only ≥ 1 KB + `Vary`, HEAD support, 504 on request timeout, query guard (≤ 4 KB, valid UTF-8 → else 400), params validated before readiness; `scripts/smoke.sh` + `scripts/smoke.ps1` | ✅ done (awaiting review) |
+| A8–A11, A13 | grid, prewarm, deploy, perf, hardening | ⏳ |
 | A12 | AI chat (**ADDITIONAL — NOT REQUIRED**) | ⏳ only after S7 go |
 
 Right now E1–E5 and E10–E14 are live (E2/E4/E5 need a data source: `STATS_FIXTURE` today, the DB after A2; otherwise **503 `not_ready`**, while E3 always works). E6–E9 answer **501 `not_implemented`** in the standard error JSON. `POST /api/v1/chat` answers
@@ -85,6 +86,17 @@ curl -s --path-as-is -o /dev/null -w "%{http_code}
 " "localhost:8080/media/stories/aomori-2025-nisar/..%2f..%2f..%2fgo.mod"   # 404
 curl -s localhost:8080/api/v1/incidents/700001/sar | grep -o '"storyId":"[^"]*"'                     # linked story
 ```
+
+### Smoke test (every endpoint, PASS/FAIL/SKIP table)
+Start the API (e.g. fixture mode, all three env vars as above), then in another terminal:
+```bash
+BASE_URL=http://127.0.0.1:8080 bash scripts/smoke.sh                                   # Git Bash / Linux
+```
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\smoke.ps1 -BaseUrl http://127.0.0.1:8080  # PowerShell
+```
+Endpoints that still answer 501 (need the DB: E6–E9) and chat when disabled are reported as SKIP; exit code 1 on any FAIL.
+Optional: `INCIDENT_ID` (default 500812) for E8/E10 once real DB ids exist.
 
 ### Build, vet, test (no `make` needed)
 ```bash
