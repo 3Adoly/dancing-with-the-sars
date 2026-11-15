@@ -1,0 +1,6 @@
+{
+  "cellDeg": 1,
+  "unit": "incidents",
+  "max": 812,
+  "cells": [ { "lat": 35.5, "lon": 140.5, "n": 812 }, { "lat": 38.5, "lon": 142.5, "n": 640 } ]
+}

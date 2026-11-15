@@ -1,0 +1,23 @@
+# build output
+bin/
+*.exe
+*.test
+*.out
+coverage.*
+
+# secrets
+.env
+
+# large / downloaded data (never commit)
+data/raw/
+data/snapshots/
+data/boundaries/
+# stories ARE committed (≤ 25 MB total)
+!data/stories/
+
+# editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

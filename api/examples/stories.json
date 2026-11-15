@@ -1,0 +1,6 @@
+{
+  "stories": [
+    { "id": "pakistan-2022-flood", "title": "Indus floods, Pakistan (2022)", "summary": "Radar sees the flood under monsoon clouds.", "type": "flood", "place": "Sindh, Pakistan", "eventDate": "2022-08-25", "platform": "Sentinel-1", "thumbnail": "/media/stories/pakistan-2022-flood/thumb.jpg", "incidentId": 612004, "order": 2 },
+    { "id": "saocom-nisar-salado-flood", "title": "Two L-band radars: SAOCOM + NISAR over the Salado basin", "summary": "Argentina's SAOCOM and NASA-ISRO's NISAR watch the same flooded plain.", "type": "flood", "place": "Buenos Aires province, Argentina", "eventDate": "2026-04-10", "platform": "SAOCOM-1A + NISAR", "thumbnail": "/media/stories/saocom-nisar-salado-flood/thumb.jpg", "order": 5 }
+  ]
+}

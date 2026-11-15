@@ -1,0 +1,720 @@
+openapi: 3.0.3
+info:
+  title: Dancing with the SARs API
+  version: 1.0.0
+  description: |
+    Backend API for the NASA Space Apps 2026 "Dancing with the SARs" explorer.
+    CONTRACT FILE (task A0). Source of truth: Plan_Detailed_Level.md §8. Example payloads for every
+    endpoint live in `api/examples/*.json` and are checked against the Go types by `go test`.
+
+    Conventions:
+    - JSON, camelCase, times RFC 3339 UTC, gzip when the client accepts it.
+    - `types` = comma-separated incident type ids; `from`/`to` = inclusive years, clamped to [minYear, current year].
+    - `bbox` = minLon,minLat,maxLon,maxLat (minLon > maxLon = crosses the antimeridian).
+    - Every response echoes `X-Request-ID`. Cacheable GETs send `ETag` + `Cache-Control`; `If-None-Match` → 304.
+    - Every 4xx/5xx uses the `Error` schema.
+    - Country keys are Natural Earth **ADM0_A3** codes.
+servers:
+  - url: http://localhost:8080
+    description: Local dev
+tags:
+  - name: system
+  - name: stats
+  - name: incidents
+  - name: sar
+  - name: stories
+  - name: chat
+    description: ADDITIONAL — NOT REQUIRED. Disabled unless CHAT_ENABLED=true and an LLM key is configured.
+
+paths:
+  /healthz:
+    get:
+      tags: [system]
+      operationId: healthz
+      summary: E1 Liveness and dependency status
+      description: Always 200 while the process is up. `status` is `degraded` when the DB is not configured or unreachable.
+      responses:
+        "200":
+          description: Health
+          headers: { Cache-Control: { schema: { type: string, example: no-store } } }
+          content: { application/json: { schema: { $ref: "#/components/schemas/Health" } } }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /api/v1/meta:
+    get:
+      tags: [system]
+      operationId: getMeta
+      summary: E2 Dataset version, year bounds, feature flags, coverage
+      responses:
+        "200":
+          description: Meta
+          headers: { ETag: { $ref: "#/components/headers/ETag" } }
+          content: { application/json: { schema: { $ref: "#/components/schemas/Meta" } } }
+        "304": { $ref: "#/components/responses/NotModified" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /api/v1/incident-types:
+    get:
+      tags: [system]
+      operationId: listIncidentTypes
+      summary: E3 Incident types with label, unit, color, icon, coverage
+      responses:
+        "200":
+          description: Types
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [types]
+                properties:
+                  types: { type: array, items: { $ref: "#/components/schemas/TypeInfo" } }
+        "304": { $ref: "#/components/responses/NotModified" }
+
+  /api/v1/stats/choropleth:
+    get:
+      tags: [stats]
+      operationId: getChoropleth
+      summary: E4 Incident counts per country for types and years
+      description: |
+        `counts` is keyed by ADM0_A3; countries with 0 are omitted. `total` counts DISTINCT incidents
+        (an incident in 3 countries adds 1 to each country but 1 to `total`). `fire_activity` must be requested alone.
+      parameters:
+        - { $ref: "#/components/parameters/TypesRequired" }
+        - { $ref: "#/components/parameters/From" }
+        - { $ref: "#/components/parameters/To" }
+        - { name: level, in: query, schema: { type: string, enum: [country], default: country } }
+      responses:
+        "200":
+          description: Choropleth
+          headers: { ETag: { $ref: "#/components/headers/ETag" } }
+          content: { application/json: { schema: { $ref: "#/components/schemas/Choropleth" } } }
+        "304": { $ref: "#/components/responses/NotModified" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+  /api/v1/stats/timeseries:
+    get:
+      tags: [stats]
+      operationId: getTimeseries
+      summary: E5 Yearly counts for the world or one country
+      parameters:
+        - { $ref: "#/components/parameters/TypesRequired" }
+        - { $ref: "#/components/parameters/From" }
+        - { $ref: "#/components/parameters/To" }
+        - { name: iso3, in: query, schema: { type: string, example: PHL }, description: ADM0_A3; omit for the world }
+      responses:
+        "200":
+          description: Timeseries
+          content: { application/json: { schema: { $ref: "#/components/schemas/Timeseries" } } }
+        "304": { $ref: "#/components/responses/NotModified" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/v1/stats/grid:
+    get:
+      tags: [stats]
+      operationId: getGrid
+      summary: E6 Density grid cells inside a bbox
+      parameters:
+        - { $ref: "#/components/parameters/TypesRequired" }
+        - { $ref: "#/components/parameters/From" }
+        - { $ref: "#/components/parameters/To" }
+        - { name: bbox, in: query, required: true, schema: { type: string, example: "120,20,150,50" } }
+        - { name: cell, in: query, schema: { type: number, enum: [0.25, 0.5, 1, 2], default: 1 } }
+      responses:
+        "200":
+          description: Grid
+          content: { application/json: { schema: { $ref: "#/components/schemas/Grid" } } }
+        "304": { $ref: "#/components/responses/NotModified" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/v1/incidents:
+    get:
+      tags: [incidents]
+      operationId: listIncidents
+      summary: E7 Incident summaries (bbox/type/year filters, keyset pagination)
+      parameters:
+        - { name: types, in: query, schema: { type: string }, description: Optional CSV of type ids (all if omitted) }
+        - { $ref: "#/components/parameters/From" }
+        - { $ref: "#/components/parameters/To" }
+        - { name: bbox, in: query, schema: { type: string } }
+        - { name: iso3, in: query, schema: { type: string } }
+        - { name: minMag, in: query, schema: { type: number } }
+        - { name: minSeverity, in: query, schema: { type: integer, minimum: 0, maximum: 3 } }
+        - { name: sort, in: query, schema: { type: string, enum: [severity, time], default: severity } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 5000, default: 500 } }
+        - { name: cursor, in: query, schema: { type: string }, description: nextCursor from the previous page }
+      responses:
+        "200":
+          description: Page of incidents
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, nextCursor, limit]
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/IncidentSummary" } }
+                  nextCursor: { type: string, description: Empty when this is the last page }
+                  limit: { type: integer }
+        "304": { $ref: "#/components/responses/NotModified" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/v1/incidents/{id}:
+    get:
+      tags: [incidents]
+      operationId: getIncident
+      summary: E8 Full incident detail
+      parameters: [ { $ref: "#/components/parameters/IncidentID" } ]
+      responses:
+        "200":
+          description: Incident
+          content: { application/json: { schema: { $ref: "#/components/schemas/Incident" } } }
+        "304": { $ref: "#/components/responses/NotModified" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/v1/search:
+    get:
+      tags: [incidents]
+      operationId: search
+      summary: E9 Fuzzy search by name/place/source id
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 2, maxLength: 100 } }
+        - { name: types, in: query, schema: { type: string } }
+        - { $ref: "#/components/parameters/From" }
+        - { $ref: "#/components/parameters/To" }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 50, default: 20 } }
+      responses:
+        "200":
+          description: Results
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [q, items]
+                properties:
+                  q: { type: string }
+                  items: { type: array, items: { $ref: "#/components/schemas/IncidentSummary" } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+
+  /api/v1/incidents/{id}/sar:
+    get:
+      tags: [sar]
+      operationId: getIncidentSAR
+      summary: E10 SAR scenes before/after the incident (NISAR, Sentinel-1, ALOS, Seasat via ASF)
+      description: |
+        Incidents with no searchable mission in [t−W, t+W] return `coverage: pre_sar_era` (or `none`) without calling ASF.
+        Cached results are served `stale: true` when ASF fails.
+      parameters:
+        - { $ref: "#/components/parameters/IncidentID" }
+        - { name: windowDays, in: query, schema: { type: integer, minimum: 1, maximum: 180, default: 45 } }
+        - { name: refresh, in: query, schema: { type: boolean, default: false } }
+      responses:
+        "200":
+          description: SAR result
+          content: { application/json: { schema: { $ref: "#/components/schemas/SARResult" } } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "502": { $ref: "#/components/responses/BadGateway" }
+        "504": { $ref: "#/components/responses/GatewayTimeout" }
+
+  /api/v1/sar/coverage-timeline:
+    get:
+      tags: [sar]
+      operationId: getSARCoverageTimeline
+      summary: E11 Which SAR missions existed in which years (static)
+      responses:
+        "200":
+          description: Timeline
+          content: { application/json: { schema: { $ref: "#/components/schemas/SARCoverageTimeline" } } }
+
+  /api/v1/stories:
+    get:
+      tags: [stories]
+      operationId: listStories
+      summary: E12 Curated change-detection stories (summaries)
+      responses:
+        "200":
+          description: Stories
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [stories]
+                properties:
+                  stories: { type: array, items: { $ref: "#/components/schemas/StorySummary" } }
+        "304": { $ref: "#/components/responses/NotModified" }
+
+  /api/v1/stories/{id}:
+    get:
+      tags: [stories]
+      operationId: getStory
+      summary: E13 Full story with layers and explanation
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, pattern: "^[a-z0-9-]{3,64}$" } }
+      responses:
+        "200":
+          description: Story
+          content: { application/json: { schema: { $ref: "#/components/schemas/Story" } } }
+        "304": { $ref: "#/components/responses/NotModified" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /media/stories/{id}/{file}:
+    get:
+      tags: [stories]
+      operationId: getStoryMedia
+      summary: E14 Story overlay/thumbnail file
+      description: "Allowed extensions: png, jpg, jpeg, webp, json, tif. Cache-Control: public, max-age=86400, immutable."
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: file, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: File
+          content:
+            image/png: { schema: { type: string, format: binary } }
+            image/jpeg: { schema: { type: string, format: binary } }
+            image/webp: { schema: { type: string, format: binary } }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /api/v1/chat:
+    post:
+      tags: [chat]
+      operationId: chat
+      summary: E15 Ask the data (ADDITIONAL — NOT REQUIRED)
+      description: |
+        Optional feature. When disabled (default) it returns 503 `chat_disabled` and `/meta.features.chat` is false.
+        With `stream: true` the response is `text/event-stream` with events `tool`, `delta`, `done` (done = the JSON below).
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: "#/components/schemas/ChatRequest" } } }
+      responses:
+        "200":
+          description: Answer
+          content:
+            application/json: { schema: { $ref: "#/components/schemas/ChatResponse" } }
+            text/event-stream: { schema: { type: string } }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "429": { $ref: "#/components/responses/TooManyRequests" }
+        "503": { $ref: "#/components/responses/ServiceUnavailable" }
+
+components:
+  headers:
+    ETag:
+      description: Weak ETag W/"v{datasetVersion}-{hash}"
+      schema: { type: string, example: 'W/"v42-9f1c2b"' }
+
+  parameters:
+    TypesRequired:
+      name: types
+      in: query
+      required: true
+      schema: { type: string, example: "earthquake,flood" }
+      description: CSV of IncidentType ids
+    From:
+      name: from
+      in: query
+      schema: { type: integer, example: 1950 }
+      description: First year (inclusive); default minYear
+    To:
+      name: to
+      in: query
+      schema: { type: integer, example: 2000 }
+      description: Last year (inclusive); default current year
+    IncidentID:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, format: int64, minimum: 1 }
+
+  responses:
+    NotModified: { description: Not modified (ETag matched) }
+    BadRequest:
+      description: invalid_param
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    NotFound:
+      description: not_found
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    TooManyRequests:
+      description: rate_limited
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    BadGateway:
+      description: upstream_error
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    GatewayTimeout:
+      description: upstream_timeout
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+    ServiceUnavailable:
+      description: not_ready | chat_disabled | chat_unavailable
+      content: { application/json: { schema: { $ref: "#/components/schemas/Error" } } }
+
+  schemas:
+    Error:
+      type: object
+      required: [error, requestId]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              enum: [invalid_param, not_found, method_not_allowed, rate_limited, internal, not_implemented,
+                     upstream_error, not_ready, chat_disabled, chat_unavailable, upstream_timeout]
+            message: { type: string }
+            details: { type: object, additionalProperties: true }
+        requestId: { type: string }
+
+    IncidentType:
+      type: string
+      enum: [earthquake, volcano, tsunami, wildfire, fire_activity, flood, landslide, storm, drought, other]
+
+    Health:
+      type: object
+      required: [status, db, cubeVersion, stories, uptimeSec]
+      properties:
+        status: { type: string, enum: [ok, degraded] }
+        db: { type: string, enum: [ok, unavailable, not_configured] }
+        cubeVersion: { type: integer, format: int64 }
+        stories: { type: integer }
+        uptimeSec: { type: integer, format: int64 }
+        version: { type: string }
+
+    Coverage:
+      type: object
+      required: [type, fromYear, toYear, sources, note]
+      properties:
+        type: { $ref: "#/components/schemas/IncidentType" }
+        fromYear: { type: integer }
+        toYear: { type: integer }
+        sources: { type: array, items: { type: string } }
+        note: { type: string }
+
+    Meta:
+      type: object
+      required: [datasetVersion, updatedAt, minYear, maxYear, features, coverage]
+      properties:
+        datasetVersion: { type: integer, format: int64 }
+        updatedAt: { type: string, format: date-time }
+        minYear: { type: integer }
+        maxYear: { type: integer }
+        features:
+          type: object
+          properties:
+            chat: { type: boolean }
+            stories: { type: boolean }
+            grid: { type: boolean }
+            sar: { type: boolean }
+        coverage: { type: array, items: { $ref: "#/components/schemas/Coverage" } }
+
+    TypeInfo:
+      type: object
+      required: [id, label, unit, color, icon, fromYear, toYear, clickable]
+      properties:
+        id: { $ref: "#/components/schemas/IncidentType" }
+        label: { type: string }
+        unit: { type: string, enum: [incidents, detections] }
+        color: { type: string, example: "#d7301f" }
+        icon: { type: string }
+        fromYear: { type: integer }
+        toYear: { type: integer }
+        clickable: { type: boolean }
+
+    Choropleth:
+      type: object
+      required: [types, from, to, level, unit, counts, ocean, total, max, breaks, coverage, datasetVersion]
+      properties:
+        types: { type: array, items: { $ref: "#/components/schemas/IncidentType" } }
+        from: { type: integer }
+        to: { type: integer }
+        level: { type: string, enum: [country] }
+        unit: { type: string, enum: [incidents, detections] }
+        counts:
+          type: object
+          additionalProperties: { type: integer, format: int64 }
+          description: ADM0_A3 → count (missing key = 0)
+        ocean: { type: integer, format: int64 }
+        total: { type: integer, format: int64, description: DISTINCT incidents }
+        max: { type: integer, format: int64 }
+        breaks: { type: array, items: { type: integer, format: int64 }, maxItems: 6 }
+        coverage: { type: array, items: { $ref: "#/components/schemas/Coverage" } }
+        datasetVersion: { type: integer, format: int64 }
+
+    Timeseries:
+      type: object
+      required: [types, iso3, unit, points, datasetVersion]
+      properties:
+        types: { type: array, items: { $ref: "#/components/schemas/IncidentType" } }
+        iso3: { type: string, description: Empty string = world }
+        unit: { type: string }
+        points:
+          type: array
+          items:
+            type: object
+            required: [year, n]
+            properties: { year: { type: integer }, n: { type: integer, format: int64 } }
+        datasetVersion: { type: integer, format: int64 }
+
+    Grid:
+      type: object
+      required: [cellDeg, unit, max, cells]
+      properties:
+        cellDeg: { type: number }
+        unit: { type: string }
+        max: { type: integer, format: int64 }
+        cells:
+          type: array
+          items:
+            type: object
+            required: [lat, lon, n]
+            properties: { lat: { type: number }, lon: { type: number }, n: { type: integer, format: int64 } }
+
+    IncidentSummary:
+      type: object
+      required: [id, type, title, startTime, lon, lat, severity]
+      properties:
+        id: { type: integer, format: int64 }
+        type: { $ref: "#/components/schemas/IncidentType" }
+        title: { type: string }
+        startTime: { type: string, format: date-time }
+        lon: { type: number }
+        lat: { type: number }
+        magnitude: { type: number }
+        severity: { type: integer, minimum: 0, maximum: 3 }
+        primaryIso3: { type: string }
+        score: { type: number, description: Search only }
+
+    Incident:
+      type: object
+      required: [id, source, sourceId, type, title, startTime, timePrecision, year, lon, lat, severity, countries]
+      properties:
+        id: { type: integer, format: int64 }
+        source: { type: string, enum: [usgs, noaa_eq, noaa_ts, noaa_vo, gvp, eonet, gdacs, ibtracs, glc, dfo] }
+        sourceId: { type: string }
+        type: { $ref: "#/components/schemas/IncidentType" }
+        title: { type: string }
+        name: { type: string }
+        description: { type: string }
+        startTime: { type: string, format: date-time }
+        endTime: { type: string, format: date-time }
+        timePrecision: { type: string, enum: [second, day, month, year] }
+        year: { type: integer }
+        lon: { type: number }
+        lat: { type: number }
+        magnitude: { type: number }
+        magnitudeUnit: { type: string }
+        severity: { type: integer, minimum: 0, maximum: 3 }
+        deaths: { type: integer }
+        primaryIso3: { type: string }
+        countries: { type: array, items: { type: string } }
+        url: { type: string }
+        props: { type: object, additionalProperties: true }
+        track: { type: object, description: GeoJSON LineString (storms) }
+        sarAvailability: { type: string, enum: [searchable, pre_sar_era, gap] }
+        storyId: { type: string }
+
+    SARMission:
+      type: object
+      required: [id, name, agency, band, from, searchable]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        agency: { type: string }
+        band: { type: string }
+        from: { type: string, format: date }
+        to: { type: string, format: date, description: Absent = still active }
+        searchable: { type: boolean }
+        note: { type: string }
+
+    SARCoverageTimeline:
+      type: object
+      required: [missions, byYear]
+      properties:
+        missions: { type: array, items: { $ref: "#/components/schemas/SARMission" } }
+        byYear:
+          type: array
+          items:
+            type: object
+            required: [year, missions]
+            properties:
+              year: { type: integer }
+              missions: { type: array, items: { type: string } }
+
+    SARScene:
+      type: object
+      required: [granuleId, mission, platform, startTime, processingLevel]
+      properties:
+        granuleId: { type: string }
+        mission: { type: string }
+        platform: { type: string }
+        beamMode: { type: string }
+        polarization: { type: string }
+        flightDirection: { type: string }
+        path: { type: integer }
+        frame: { type: integer }
+        startTime: { type: string, format: date-time }
+        processingLevel: { type: string }
+        browseUrl: { type: string, description: Public image (no login) }
+        downloadUrl: { type: string, description: Needs Earthdata Login }
+        sizeMB: { type: number }
+        footprint: { type: object, description: GeoJSON Polygon }
+
+    SARResult:
+      type: object
+      required: [incidentId, coverage, windowDays, missionsInWindow, before, after, fetchedAt, stale, asfSearchUrl]
+      properties:
+        incidentId: { type: integer, format: int64 }
+        coverage: { type: string, enum: [ok, before_only, after_only, none, pre_sar_era] }
+        reason: { type: string, enum: [no_scenes_found, no_searchable_mission_in_window, upstream_error] }
+        windowDays: { type: integer }
+        missionsInWindow: { type: array, items: { type: string } }
+        before: { type: array, items: { $ref: "#/components/schemas/SARScene" } }
+        after: { type: array, items: { $ref: "#/components/schemas/SARScene" } }
+        bestPair:
+          type: object
+          properties: { before: { type: string }, after: { type: string } }
+        storyId: { type: string }
+        fetchedAt: { type: string, format: date-time }
+        stale: { type: boolean }
+        asfSearchUrl: { type: string }
+
+    Legend:
+      type: object
+      required: [type, min, max, unit, lowLabel, highLabel]
+      properties:
+        type: { type: string, enum: [diverging, sequential, cyclic] }
+        min: { type: number }
+        max: { type: number }
+        unit: { type: string, example: dB }
+        lowLabel: { type: string }
+        highLabel: { type: string }
+        colors: { type: array, items: { type: string } }
+
+    StoryLayer:
+      type: object
+      required: [kind, url, bounds]
+      properties:
+        kind: { type: string, enum: [before, after, change, interferogram, frame] }
+        url: { type: string, example: /media/stories/pakistan-2022-flood/change_logratio.png }
+        bounds:
+          type: array
+          items: { type: number }
+          minItems: 4
+          maxItems: 4
+          description: "[west, south, east, north] EPSG:4326"
+        date: { type: string, format: date }
+        label: { type: string }
+        legend: { $ref: "#/components/schemas/Legend" }
+        platform: { type: string, description: Optional; overrides Story.platform (cross-sensor stories, e.g. SAOCOM + NISAR) }
+        polarization: { type: string, description: Optional; overrides Story.polarization }
+
+    Story:
+      type: object
+      required: [id, title, summary, type, place, bbox, center, zoom, eventDate, beforeDate, afterDate,
+                 platform, band, polarization, product, thumbnail, layers, explanation, credits, order]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        summary: { type: string }
+        incidentId: { type: integer, format: int64 }
+        incidentSource: { type: string }
+        incidentSourceId: { type: string }
+        type: { $ref: "#/components/schemas/IncidentType" }
+        place: { type: string }
+        iso3: { type: string }
+        bbox: { type: array, items: { type: number }, minItems: 4, maxItems: 4 }
+        center: { type: array, items: { type: number }, minItems: 2, maxItems: 2 }
+        zoom: { type: number }
+        eventDate: { type: string, format: date }
+        beforeDate: { type: string, format: date }
+        afterDate: { type: string, format: date }
+        platform: { type: string }
+        band: { type: string }
+        polarization: { type: string }
+        product: { type: string }
+        thumbnail: { type: string }
+        layers: { type: array, items: { $ref: "#/components/schemas/StoryLayer" } }
+        explanation:
+          type: object
+          required: [driver, polarizationNote, howToRead]
+          properties:
+            driver: { type: string }
+            polarizationNote: { type: string }
+            howToRead: { type: string }
+            caveats: { type: string }
+        credits: { type: array, items: { type: string } }
+        order: { type: integer }
+
+    StorySummary:
+      type: object
+      required: [id, title, summary, type, place, eventDate, platform, thumbnail, order]
+      properties:
+        id: { type: string }
+        title: { type: string }
+        summary: { type: string }
+        type: { $ref: "#/components/schemas/IncidentType" }
+        place: { type: string }
+        eventDate: { type: string, format: date }
+        platform: { type: string }
+        thumbnail: { type: string }
+        incidentId: { type: integer, format: int64 }
+        order: { type: integer }
+
+    ChatRequest:
+      type: object
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          maxItems: 20
+          items:
+            type: object
+            required: [role, content]
+            properties:
+              role: { type: string, enum: [user, assistant] }
+              content: { type: string, maxLength: 2000 }
+        context:
+          type: object
+          properties:
+            types: { type: array, items: { $ref: "#/components/schemas/IncidentType" } }
+            from: { type: integer }
+            to: { type: integer }
+            selectedIncidentId: { type: integer, format: int64 }
+            storyId: { type: string }
+        stream: { type: boolean, default: false }
+
+    ChatResponse:
+      type: object
+      required: [answer, citations, actions, toolTrace, provider]
+      properties:
+        answer: { type: string }
+        citations:
+          type: array
+          items:
+            type: object
+            properties:
+              kind: { type: string, enum: [incident, story] }
+              id: { type: string }
+              title: { type: string }
+        actions:
+          type: array
+          items:
+            type: object
+            required: [action]
+            properties:
+              action: { type: string, enum: [set_filters, fly_to, open_incident, open_story] }
+              types: { type: array, items: { $ref: "#/components/schemas/IncidentType" } }
+              from: { type: integer }
+              to: { type: integer }
+              lon: { type: number }
+              lat: { type: number }
+              zoom: { type: number }
+              id: { type: integer, format: int64 }
+              storyId: { type: string }
+        toolTrace:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              args: { type: object, additionalProperties: true }
+        provider: { type: string }

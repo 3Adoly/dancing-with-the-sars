@@ -1,0 +1,22 @@
+{
+  "id": 118233,
+  "source": "noaa_vo",
+  "sourceId": "273",
+  "type": "volcano",
+  "title": "Pinatubo eruption (VEI 6)",
+  "name": "Pinatubo",
+  "startTime": "1991-06-15T00:00:00Z",
+  "timePrecision": "day",
+  "year": 1991,
+  "lon": 120.35,
+  "lat": 15.13,
+  "magnitude": 6,
+  "magnitudeUnit": "VEI",
+  "severity": 3,
+  "deaths": 847,
+  "primaryIso3": "PHL",
+  "countries": ["PHL"],
+  "url": "https://www.ngdc.noaa.gov/hazel/view/hazards/volcano/event-more-info/273",
+  "props": { "elevationM": 1486, "morphology": "Stratovolcano" },
+  "sarAvailability": "pre_sar_era"
+}

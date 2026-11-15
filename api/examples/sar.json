@@ -1,0 +1,50 @@
+{
+  "incidentId": 500812,
+  "coverage": "ok",
+  "windowDays": 45,
+  "missionsInWindow": ["sentinel1"],
+  "before": [
+    {
+      "granuleId": "S1A_IW_GRDH_1SDV_20230129T153900_20230129T153925_046997_05A2F1_1A2B",
+      "mission": "sentinel1",
+      "platform": "Sentinel-1A",
+      "beamMode": "IW",
+      "polarization": "VV+VH",
+      "flightDirection": "ASCENDING",
+      "path": 14,
+      "frame": 116,
+      "startTime": "2023-01-29T15:39:00Z",
+      "processingLevel": "GRD_HD",
+      "browseUrl": "https://datapool.asf.alaska.edu/BROWSE/SA/S1A_IW_GRDH_1SDV_20230129T153900_20230129T153925_046997_05A2F1_1A2B.jpg",
+      "downloadUrl": "https://datapool.asf.alaska.edu/GRD_HD/SA/S1A_IW_GRDH_1SDV_20230129T153900_20230129T153925_046997_05A2F1_1A2B.zip",
+      "sizeMB": 1650.2,
+      "footprint": { "type": "Polygon", "coordinates": [[[36.1, 36.9], [39.0, 37.3], [39.3, 35.8], [36.4, 35.4], [36.1, 36.9]]] }
+    }
+  ],
+  "after": [
+    {
+      "granuleId": "S1A_IW_GRDH_1SDV_20230210T153900_20230210T153925_047172_05A8D3_3C4D",
+      "mission": "sentinel1",
+      "platform": "Sentinel-1A",
+      "beamMode": "IW",
+      "polarization": "VV+VH",
+      "flightDirection": "ASCENDING",
+      "path": 14,
+      "frame": 116,
+      "startTime": "2023-02-10T15:39:00Z",
+      "processingLevel": "GRD_HD",
+      "browseUrl": "https://datapool.asf.alaska.edu/BROWSE/SA/S1A_IW_GRDH_1SDV_20230210T153900_20230210T153925_047172_05A8D3_3C4D.jpg",
+      "downloadUrl": "https://datapool.asf.alaska.edu/GRD_HD/SA/S1A_IW_GRDH_1SDV_20230210T153900_20230210T153925_047172_05A8D3_3C4D.zip",
+      "sizeMB": 1648.9,
+      "footprint": { "type": "Polygon", "coordinates": [[[36.1, 36.9], [39.0, 37.3], [39.3, 35.8], [36.4, 35.4], [36.1, 36.9]]] }
+    }
+  ],
+  "bestPair": {
+    "before": "S1A_IW_GRDH_1SDV_20230129T153900_20230129T153925_046997_05A2F1_1A2B",
+    "after": "S1A_IW_GRDH_1SDV_20230210T153900_20230210T153925_047172_05A8D3_3C4D"
+  },
+  "storyId": "turkiye-2023-eq",
+  "fetchedAt": "2026-11-16T10:02:11Z",
+  "stale": false,
+  "asfSearchUrl": "https://search.asf.alaska.edu/#/?zoom=7&center=37.2,37.2&start=2022-12-23&end=2023-03-23"
+}

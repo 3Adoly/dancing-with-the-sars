@@ -1,0 +1,14 @@
+{
+  "types": [
+    { "id": "earthquake", "label": "Earthquakes", "unit": "incidents", "color": "#d7301f", "icon": "earthquake", "fromYear": 1900, "toYear": 2026, "clickable": true },
+    { "id": "volcano", "label": "Volcanoes", "unit": "incidents", "color": "#7a0177", "icon": "volcano", "fromYear": 1900, "toYear": 2026, "clickable": true },
+    { "id": "tsunami", "label": "Tsunamis", "unit": "incidents", "color": "#0570b0", "icon": "tsunami", "fromYear": 1900, "toYear": 2026, "clickable": true },
+    { "id": "wildfire", "label": "Wildfires (events)", "unit": "incidents", "color": "#e31a1c", "icon": "wildfire", "fromYear": 2000, "toYear": 2026, "clickable": true },
+    { "id": "fire_activity", "label": "Fire activity (satellite)", "unit": "detections", "color": "#fd8d3c", "icon": "fire", "fromYear": 2000, "toYear": 2026, "clickable": false },
+    { "id": "flood", "label": "Floods", "unit": "incidents", "color": "#2171b5", "icon": "flood", "fromYear": 1985, "toYear": 2026, "clickable": true },
+    { "id": "landslide", "label": "Landslides", "unit": "incidents", "color": "#8c510a", "icon": "landslide", "fromYear": 1988, "toYear": 2026, "clickable": true },
+    { "id": "storm", "label": "Storms / cyclones", "unit": "incidents", "color": "#6a51a3", "icon": "storm", "fromYear": 1900, "toYear": 2026, "clickable": true },
+    { "id": "drought", "label": "Droughts", "unit": "incidents", "color": "#bf812d", "icon": "drought", "fromYear": 2000, "toYear": 2026, "clickable": true },
+    { "id": "other", "label": "Other", "unit": "incidents", "color": "#737373", "icon": "other", "fromYear": 2000, "toYear": 2026, "clickable": true }
+  ]
+}

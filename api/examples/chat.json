@@ -1,0 +1,7 @@
+{
+  "answer": "In the change map, blue means radar backscatter dropped after the flood. Calm water reflects the radar pulse away from the satellite like a mirror, so newly flooded fields turn dark in VV and show as a decrease [story:pakistan-2022-flood].",
+  "citations": [ { "kind": "story", "id": "pakistan-2022-flood", "title": "Indus floods, Pakistan (2022)" } ],
+  "actions": [ { "action": "open_story", "storyId": "pakistan-2022-flood" } ],
+  "toolTrace": [ { "name": "get_story", "args": { "id": "pakistan-2022-flood" } } ],
+  "provider": "groq"
+}

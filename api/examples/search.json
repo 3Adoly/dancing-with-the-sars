@@ -1,0 +1,6 @@
+{
+  "q": "katrina",
+  "items": [
+    { "id": 402211, "type": "storm", "title": "Hurricane KATRINA (2005)", "startTime": "2005-08-23T18:00:00Z", "lon": -89.6, "lat": 29.3, "magnitude": 150, "severity": 3, "primaryIso3": "USA", "score": 0.92 }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "missions": [
+    { "id": "seasat", "name": "Seasat", "agency": "NASA", "band": "L", "from": "1978-06-28", "to": "1978-10-10", "searchable": true },
+    { "id": "ers", "name": "ERS-1/2", "agency": "ESA", "band": "C", "from": "1991-07-17", "to": "2011-07-04", "searchable": false, "note": "Not returned by our ASF query" },
+    { "id": "alos", "name": "ALOS PALSAR", "agency": "JAXA", "band": "L", "from": "2006-05-16", "to": "2011-04-21", "searchable": true },
+    { "id": "sentinel1", "name": "Sentinel-1", "agency": "ESA/Copernicus", "band": "C", "from": "2014-04-03", "searchable": true },
+    { "id": "saocom", "name": "SAOCOM-1A/1B", "agency": "CONAE", "band": "L", "from": "2018-10-07", "searchable": false, "note": "Partner agency: no public search API; used only in a precomputed story (Argentina)" },
+    { "id": "nisar", "name": "NISAR", "agency": "NASA/ISRO", "band": "L+S", "from": "2025-10-28", "searchable": true }
+  ],
+  "byYear": [
+    { "year": 1978, "missions": ["seasat"] },
+    { "year": 1979, "missions": [] },
+    { "year": 2006, "missions": ["ers", "alos"] },
+    { "year": 2026, "missions": ["sentinel1", "saocom", "nisar"] }
+  ]
+}

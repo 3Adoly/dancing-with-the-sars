@@ -1,0 +1,39 @@
+{
+  "id": "saocom-nisar-salado-flood",
+  "title": "Two L-band radars: SAOCOM + NISAR over the Salado basin",
+  "summary": "Argentina's SAOCOM and NASA-ISRO's NISAR watch the same flooded plain.",
+  "type": "flood",
+  "place": "Buenos Aires province, Argentina",
+  "iso3": "ARG",
+  "bbox": [-60.5, -36.5, -58.5, -35.0],
+  "center": [-59.5, -35.75],
+  "zoom": 8,
+  "eventDate": "2026-04-10",
+  "beforeDate": "2026-03-20",
+  "afterDate": "2026-04-14",
+  "platform": "SAOCOM-1A + NISAR",
+  "band": "L",
+  "polarization": "HH",
+  "product": "SAOCOM-1 L1D + NISAR L2 GCOV",
+  "thumbnail": "/media/stories/saocom-nisar-salado-flood/thumb.jpg",
+  "layers": [
+    { "kind": "before", "url": "/media/stories/saocom-nisar-salado-flood/before_saocom_hh.png", "bounds": [-60.5, -36.5, -58.5, -35.0], "date": "2026-03-20", "platform": "SAOCOM-1A", "polarization": "HH" },
+    { "kind": "after", "url": "/media/stories/saocom-nisar-salado-flood/after_nisar_hh.png", "bounds": [-60.5, -36.5, -58.5, -35.0], "date": "2026-04-14", "label": "Cross-sensor visual comparison (not a computed change)", "platform": "NISAR", "polarization": "HH" },
+    {
+      "kind": "change",
+      "url": "/media/stories/saocom-nisar-salado-flood/change_saocom_logratio.png",
+      "bounds": [-60.5, -36.5, -58.5, -35.0],
+      "platform": "SAOCOM-1A",
+      "polarization": "HH",
+      "legend": { "type": "diverging", "min": -6, "max": 6, "unit": "dB", "lowLabel": "decrease (likely new water)", "highLabel": "increase" }
+    }
+  ],
+  "explanation": {
+    "driver": "Heavy autumn rain on the very flat Salado basin left water standing on fields for weeks.",
+    "polarizationNote": "Both are L-band (~24 cm): HH separates open water (dark) from flooded vegetation (bright double bounce).",
+    "howToRead": "The change map compares SAOCOM with SAOCOM only. The swipe compares SAOCOM (before) with NISAR (after) visually.",
+    "caveats": "Dates and place are placeholders until Ibrahim confirms coverage (S3)."
+  },
+  "credits": ["Producto SAOCOM® - ©CONAE - 2026. Todos los derechos reservados", "NISAR data courtesy NASA/JPL-Caltech and ISRO, via ASF DAAC"],
+  "order": 5
+}
