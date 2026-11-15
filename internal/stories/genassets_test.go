@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-// TestGenerateAssets writes the placeholder story images under data/stories.
+// TestGenerateAssets writes the placeholder story images under testdata/stories_validate.
 // It is skipped unless DWTS_GEN_STORY_ASSETS=1, so a normal `go test` never
 // touches the repository:
 //
@@ -20,7 +20,7 @@ import (
 // stay at a few hundred bytes each.
 func TestGenerateAssets(t *testing.T) {
 	if os.Getenv("DWTS_GEN_STORY_ASSETS") != "1" {
-		t.Skip("set DWTS_GEN_STORY_ASSETS=1 to regenerate data/stories placeholder images")
+		t.Skip("set DWTS_GEN_STORY_ASSETS=1 to regenerate testdata/stories_validate placeholder images")
 	}
 	var (
 		blue   = color.RGBA{0x21, 0x66, 0xac, 0xff}

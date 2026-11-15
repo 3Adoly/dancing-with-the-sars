@@ -14,6 +14,8 @@ COPY --from=build /out/api /app/api
 # Dev data so the API is useful before the database exists (A2). Replaced by the real DB later.
 COPY testdata/stats_fixture.json testdata/incidents_fixture.json /app/testdata/
 COPY testdata/stories /app/testdata/stories
+# Real change-detection stories (Sentinel-1 RTC + NISAR quick-looks).
+COPY data/stories /app/data/stories
 EXPOSE 8080
 USER nonroot:nonroot
 ENTRYPOINT ["/app/api"]

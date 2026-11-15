@@ -2,84 +2,311 @@
   "version": 1,
   "stories": [
     {
-      "id": "demo-placeholder",
-      "order": 90,
-      "title": "Demo placeholder: Türkiye earthquake",
-      "summary": "Placeholder story with solid-colour images so the stories pipeline can be tested before the real data arrives.",
+      "id": "aomori-2025-nisar",
+      "order": 1,
+      "title": "NISAR over Aomori after the M7.6 earthquake (Dec 2025)",
+      "summary": "NASA-ISRO's new L-band radar imaged northern Japan one day before and eleven days after the 8 December 2025 M7.6 earthquake. A same-sensor Sentinel-1 change map shows why shaking alone barely changes radar brightness, and why ground motion needs radar phase (InSAR).",
       "type": "earthquake",
       "incidentSource": "usgs",
-      "incidentSourceId": "us6000jllz",
-      "place": "Kahramanmaraş, Türkiye",
-      "iso3": "TUR",
-      "bbox": [30.0, 36.0, 38.0, 38.0],
-      "center": [34.0, 37.0],
-      "zoom": 6.5,
-      "eventDate": "2023-02-06",
-      "beforeDate": "2023-01-25",
-      "afterDate": "2023-02-18",
-      "platform": "Sentinel-1",
-      "band": "C",
-      "polarization": "VV",
-      "product": "Placeholder (no real SAR data)",
+      "incidentSourceId": "us6000rtdt",
+      "place": "Aomori Prefecture and Shimokita Peninsula, Japan",
+      "iso3": "JPN",
+      "bbox": [
+        140.6,
+        40.2,
+        142.0,
+        41.6
+      ],
+      "center": [
+        141.3,
+        40.9
+      ],
+      "zoom": 8,
+      "eventDate": "2025-12-08",
+      "beforeDate": "2025-12-07",
+      "afterDate": "2025-12-19",
+      "platform": "NISAR + Sentinel-1",
+      "band": "L (NISAR) + C (Sentinel-1)",
+      "polarization": "HH/HV (NISAR), VV (Sentinel-1)",
+      "product": "NISAR L2 GCOV browse quick-look (public, ASF DAAC) + Sentinel-1 RTC (Microsoft Planetary Computer)",
       "thumbnail": "thumb.jpg",
       "layers": [
-        { "kind": "before", "url": "before.png", "bounds": [30.0, 36.0, 38.0, 38.0], "date": "2023-01-25" },
-        { "kind": "after", "url": "after.png", "bounds": [30.0, 36.0, 38.0, 38.0], "date": "2023-02-18" },
+        {
+          "kind": "before",
+          "url": "nisar_before_browse.png",
+          "bounds": [
+            140.6,
+            40.2,
+            142.0,
+            41.6
+          ],
+          "date": "2025-12-07",
+          "platform": "NISAR",
+          "polarization": "HH/HV",
+          "label": "NISAR GCOV browse quick-look (public), L-band HH/HV, 7 Dec 2025 (1 day before)"
+        },
+        {
+          "kind": "after",
+          "url": "nisar_after_browse.png",
+          "bounds": [
+            140.6,
+            40.2,
+            142.0,
+            41.6
+          ],
+          "date": "2025-12-19",
+          "platform": "NISAR",
+          "polarization": "HH/HV",
+          "label": "NISAR GCOV browse quick-look (public), L-band HH/HV, 19 Dec 2025 (11 days after)"
+        },
+        {
+          "kind": "before",
+          "url": "s1_before_vv.png",
+          "bounds": [
+            140.6,
+            40.2,
+            142.0,
+            41.6
+          ],
+          "date": "2025-12-05",
+          "platform": "Sentinel-1",
+          "polarization": "VV",
+          "label": "Sentinel-1C VV, 5 Dec 2025 (3 days before)"
+        },
+        {
+          "kind": "after",
+          "url": "s1_after_vv.png",
+          "bounds": [
+            140.6,
+            40.2,
+            142.0,
+            41.6
+          ],
+          "date": "2025-12-17",
+          "platform": "Sentinel-1",
+          "polarization": "VV",
+          "label": "Sentinel-1C VV, 17 Dec 2025 (9 days after)"
+        },
         {
           "kind": "change",
-          "url": "change.png",
-          "bounds": [30.0, 36.0, 38.0, 38.0],
+          "url": "s1_change_logratio.png",
+          "bounds": [
+            140.6,
+            40.2,
+            142.0,
+            41.6
+          ],
+          "platform": "Sentinel-1",
+          "polarization": "VV",
           "legend": {
             "type": "diverging",
             "min": -6,
             "max": 6,
             "unit": "dB",
-            "lowLabel": "decrease",
-            "highLabel": "increase",
-            "colors": ["#2166ac", "#f7f7f7", "#b2182b"]
-          }
+            "lowLabel": "backscatter decrease",
+            "highLabel": "backscatter increase",
+            "colors": [
+              "#2166ac",
+              "#f7f7f7",
+              "#b2182b"
+            ]
+          },
+          "label": "Sentinel-1 VV change 5 to 17 Dec 2025, land only (same sensor, same orbit 68)"
         }
       ],
       "explanation": {
-        "driver": "Placeholder text. The real story will describe the physical driver of the event.",
-        "polarizationNote": "Placeholder text. The real story will say which polarization shows the change and why.",
-        "howToRead": "Placeholder text. Blue is the before image, green the after image, and the blue to red gradient stands in for a change layer.",
-        "caveats": "These images are solid colours generated for pipeline tests. They contain no radar data."
-      },
-      "credits": ["Placeholder imagery generated for pipeline testing. Not real SAR data."]
-    },
-    {
-      "id": "demo-two-sensors",
-      "order": 91,
-      "title": "Demo placeholder: two sensors",
-      "summary": "Placeholder cross-sensor swipe, SAOCOM-1A before and NISAR after, with no change layer.",
-      "type": "flood",
-      "place": "Salado basin, Argentina",
-      "iso3": "ARG",
-      "bbox": [-61.0, -33.0, -59.0, -31.0],
-      "center": [-60.0, -32.0],
-      "zoom": 7.5,
-      "eventDate": "2026-01-15",
-      "beforeDate": "2026-01-12",
-      "afterDate": "2026-01-18",
-      "platform": "SAOCOM-1A + NISAR",
-      "band": "L",
-      "polarization": "HV",
-      "product": "Placeholder (no real SAR data)",
-      "thumbnail": "thumb.jpg",
-      "layers": [
-        { "kind": "before", "url": "before_saocom.png", "bounds": [-61.0, -33.0, -59.0, -31.0], "date": "2026-01-12", "platform": "SAOCOM-1A" },
-        { "kind": "after", "url": "after_nisar.png", "bounds": [-61.0, -33.0, -59.0, -31.0], "date": "2026-01-18", "platform": "NISAR" }
-      ],
-      "explanation": {
-        "driver": "Placeholder text. The real story will describe the physical driver of the event.",
-        "polarizationNote": "Placeholder text. Both radars are L-band, so both see through vegetation canopy.",
-        "howToRead": "Placeholder text. Swipe between the SAOCOM-1A image (orange) and the NISAR image (purple). This is a visual comparison of two sensors, not a computed change.",
-        "caveats": "Two different sensors are never differenced: this story has no change layer on purpose."
+        "driver": "On 8 December 2025 (14:15 UTC) an M7.6 earthquake struck about 41 km deep off the Pacific coast of Aomori (USGS us6000rtdt, PAGER alert yellow, tsunami warning issued). The epicentre (142.18°E, 41.00°N) lies at sea just east of this map. NISAR passed over on 7 December and again on 19 December on the same orbit track (46, descending), so the two images are directly comparable.",
+        "polarizationNote": "NISAR uses L-band (24 cm waves). Its quick-look mixes two polarizations: HH (sent and received horizontally) is strong from bare ground, towns and rough surfaces; HV (sent horizontal, received vertical) comes mostly from volume scattering in forests and crops. That is why the forested mountains look greener and fields, towns and beaches look pink or white. Sentinel-1 VV is C-band (5.6 cm): shorter waves that react more to snow, wet soil and leaves, and penetrate vegetation less than L-band.",
+        "howToRead": "First swipe the two NISAR images (7 Dec to 19 Dec). Calm water such as Lake Towada, Lake Ogawara and Mutsu Bay is dark because it reflects the radar away like a mirror. Then turn on the Sentinel-1 change layer: blue = backscatter decreased, red = increased, transparent = less than 1 dB change. Over land almost everything stays transparent: the shaking did not visibly change surface roughness or moisture at this scale. The ground moved by centimetres, which radar brightness cannot show; radar phase (InSAR) can, and that is NISAR's next step for this event.",
+        "caveats": "The NISAR layers are public browse quick-looks (about 180 m pixels, 8-bit colour), not calibrated data. We georeferenced them from the ASF footprint (corner-fit error about 105-150 m), so no NISAR change map is computed here. The large bright glow over the north of the Shimokita Peninsula and the Tsugaru Strait in both NISAR images is an image artefact (most likely radio-frequency interference, common at L-band), not a real feature. Sentinel-1 change over the sea is masked because wind dominates it; small changes left on land and lakes are mostly December snow, freezing and wind on the lakes. A full-resolution, calibrated NISAR GCOV change map and an InSAR deformation map will be added once our NASA Earthdata access is set up."
       },
       "credits": [
-        "Producto SAOCOM® - ©CONAE - 2026. Todos los derechos reservados",
-        "Placeholder imagery generated for pipeline testing. Not real SAR data."
+        "NISAR data courtesy NASA/ISRO via ASF DAAC (public GCOV browse quick-looks: NISAR_L2_PR_GCOV_007_046_D_068_4005_DHDH_A_20251207T093505_20251207T093540_X05009_N_F_J_001, NISAR_L2_PR_GCOV_008_046_D_068_4005_DHDH_A_20251219T093506_20251219T093541_X05009_N_F_J_001)",
+        "Contains modified Copernicus Sentinel data 2025",
+        "Sentinel-1 RTC via Microsoft Planetary Computer",
+        "Land mask: Natural Earth (public domain)",
+        "Earthquake parameters: USGS ComCat us6000rtdt"
+      ]
+    },
+    {
+      "id": "sindh-2022-flood",
+      "order": 2,
+      "title": "Indus floods, Sindh, Pakistan (2022)",
+      "summary": "Record monsoon rain left huge parts of Sindh under water. Radar sees the flood through the clouds: Sentinel-1 before (June) and at the peak (30 August 2022), plus six monthly frames of the water arriving and slowly draining.",
+      "type": "flood",
+      "incidentSource": "gdacs",
+      "incidentSourceId": "FL1101522",
+      "place": "Dadu, Mehar and Lake Manchar, Sindh, Pakistan",
+      "iso3": "PAK",
+      "bbox": [
+        67.55,
+        26.35,
+        68.35,
+        27.25
+      ],
+      "center": [
+        67.95,
+        26.8
+      ],
+      "zoom": 9,
+      "eventDate": "2022-08-25",
+      "beforeDate": "2022-06-19",
+      "afterDate": "2022-08-30",
+      "platform": "Sentinel-1",
+      "band": "C",
+      "polarization": "VV",
+      "product": "Sentinel-1 RTC (gamma0, Microsoft Planetary Computer)",
+      "thumbnail": "thumb.jpg",
+      "layers": [
+        {
+          "kind": "before",
+          "url": "before_vv.png",
+          "bounds": [
+            67.55,
+            26.35,
+            68.35,
+            27.25
+          ],
+          "date": "2022-06-19",
+          "platform": "Sentinel-1",
+          "polarization": "VV",
+          "label": "Sentinel-1A VV, 19 Jun 2022 (before the monsoon floods)"
+        },
+        {
+          "kind": "after",
+          "url": "after_vv.png",
+          "bounds": [
+            67.55,
+            26.35,
+            68.35,
+            27.25
+          ],
+          "date": "2022-08-30",
+          "platform": "Sentinel-1",
+          "polarization": "VV",
+          "label": "Sentinel-1A VV, 30 Aug 2022 (flood peak)"
+        },
+        {
+          "kind": "change",
+          "url": "change_logratio.png",
+          "bounds": [
+            67.55,
+            26.35,
+            68.35,
+            27.25
+          ],
+          "platform": "Sentinel-1",
+          "polarization": "VV",
+          "legend": {
+            "type": "diverging",
+            "min": -6,
+            "max": 6,
+            "unit": "dB",
+            "lowLabel": "decrease (likely new open water)",
+            "highLabel": "increase (flooded vegetation, wet soil)",
+            "colors": [
+              "#2166ac",
+              "#f7f7f7",
+              "#b2182b"
+            ]
+          },
+          "label": "VV change 19 Jun to 30 Aug 2022 (same sensor, same orbit 78)"
+        },
+        {
+          "kind": "frame",
+          "url": "frame_202206.png",
+          "bounds": [
+            67.55,
+            26.35,
+            68.35,
+            27.25
+          ],
+          "date": "2022-06-19",
+          "label": "Jun 2022",
+          "platform": "Sentinel-1",
+          "polarization": "VV"
+        },
+        {
+          "kind": "frame",
+          "url": "frame_202207.png",
+          "bounds": [
+            67.55,
+            26.35,
+            68.35,
+            27.25
+          ],
+          "date": "2022-07-25",
+          "label": "Jul 2022",
+          "platform": "Sentinel-1",
+          "polarization": "VV"
+        },
+        {
+          "kind": "frame",
+          "url": "frame_202208.png",
+          "bounds": [
+            67.55,
+            26.35,
+            68.35,
+            27.25
+          ],
+          "date": "2022-08-30",
+          "label": "Aug 2022",
+          "platform": "Sentinel-1",
+          "polarization": "VV"
+        },
+        {
+          "kind": "frame",
+          "url": "frame_202209.png",
+          "bounds": [
+            67.55,
+            26.35,
+            68.35,
+            27.25
+          ],
+          "date": "2022-09-23",
+          "label": "Sep 2022",
+          "platform": "Sentinel-1",
+          "polarization": "VV"
+        },
+        {
+          "kind": "frame",
+          "url": "frame_202210.png",
+          "bounds": [
+            67.55,
+            26.35,
+            68.35,
+            27.25
+          ],
+          "date": "2022-10-29",
+          "label": "Oct 2022",
+          "platform": "Sentinel-1",
+          "polarization": "VV"
+        },
+        {
+          "kind": "frame",
+          "url": "frame_202212.png",
+          "bounds": [
+            67.55,
+            26.35,
+            68.35,
+            27.25
+          ],
+          "date": "2022-12-04",
+          "label": "Dec 2022",
+          "platform": "Sentinel-1",
+          "polarization": "VV"
+        }
+      ],
+      "explanation": {
+        "driver": "From July to September 2022, monsoon rain several times heavier than normal fell on Sindh. Rivers and hill torrents overflowed and water ponded on the flat plain west of the Indus around Dadu, Mehar and Johi, where it had nowhere to drain. Lake Manchar (bottom left) rose until its embankment was deliberately breached in early September to protect nearby towns. Nationwide, more than 1,700 people died and millions lost homes and crops.",
+        "polarizationNote": "VV means the radar sends and receives vertically polarized C-band waves (5.6 cm). Calm open water acts like a mirror and reflects the pulse away from the satellite, so flooded land turns very dark (often 6-15 dB lower). Where water stands among crops, trees or houses, the pulse can bounce off the water and then off stems or walls straight back (double bounce), so the signal increases instead (red).",
+        "howToRead": "Swipe 19 June to 30 August: black areas are water. On the change layer, blue = backscatter decreased (very likely new open water), red = increased (flooded vegetation, wet soil or growing crops), transparent = less than 1 dB change. Then play the monthly frames from June to December: the flood arrives in August, peaks around the end of the month and drains slowly; west of the Indus water is still visible in December.",
+        "caveats": "Radar measures surface roughness and moisture, not water itself: smooth sand, tarmac or very dry soil can also look dark, and wind-roughened water can look bright. The June image is from the dry season, so some red and blue is normal crop and soil-moisture change. Pixels are about 56 m (averaged from 10 m) after a 5x5 median speckle filter, so small channels and villages are smoothed out. This is a visual analysis, not an official flood map."
+      },
+      "credits": [
+        "Contains modified Copernicus Sentinel data 2022",
+        "Sentinel-1 RTC via Microsoft Planetary Computer",
+        "Flood event: GDACS FL1101522"
       ]
     }
   ]
