@@ -29,6 +29,9 @@ func (h *handlers) healthz(w http.ResponseWriter, r *http.Request) {
 			resp.DB, resp.Status = "unavailable", "degraded"
 		}
 	}
+	if h.d.Stories != nil {
+		resp.Stories = h.d.Stories.Len()
+	}
 	if h.d.Stats != nil && h.d.Stats.Ready() {
 		resp.CubeVersion = h.d.Stats.Version()
 	} else {

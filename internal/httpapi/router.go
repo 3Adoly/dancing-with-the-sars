@@ -25,9 +25,10 @@ type Deps struct {
 	RequestTimeout time.Duration
 	StartedAt      time.Time
 	Version        string
-	ChatEnabled    bool     // ADDITIONAL — NOT REQUIRED (A12)
-	Stats          StatsAPI // nil = no stats service (E2/E4/E5 → 503, E3 static)
-	SAR            SARAPI   // nil = E10/E11 → 503
+	ChatEnabled    bool       // ADDITIONAL — NOT REQUIRED (A12)
+	Stats          StatsAPI   // nil = no stats service (E2/E4/E5 → 503, E3 static)
+	SAR            SARAPI     // nil = E10/E11 → 503
+	Stories        StoriesAPI // nil = no stories (E12 empty list, E13/E14 404)
 }
 
 // NewRouter builds the full HTTP handler.
@@ -70,11 +71,11 @@ func NewRouter(d Deps) http.Handler {
 		r.Get("/search", notImplemented("A4"))                 // E9
 		r.Get("/incidents/{id}/sar", h.incidentSAR)            // E10
 		r.Get("/sar/coverage-timeline", h.sarCoverageTimeline) // E11
-		r.Get("/stories", notImplemented("A6"))                // E12
-		r.Get("/stories/{id}", notImplemented("A6"))           // E13
+		r.Get("/stories", h.stories)                           // E12
+		r.Get("/stories/{id}", h.story)                        // E13
 		r.Post("/chat", h.chat)                                // E15 (ADDITIONAL — NOT REQUIRED)
 	})
-	r.Get("/media/stories/{id}/{file}", notImplemented("A6")) // E14
+	r.Get("/media/stories/{id}/{file}", h.storyMedia) // E14
 
 	return r
 }
