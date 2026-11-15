@@ -8,11 +8,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/dwts/backend/internal/config"
+	"github.com/dwts/backend/internal/domain"
 	"github.com/dwts/backend/internal/httpapi"
 	"github.com/dwts/backend/internal/service"
 	"github.com/dwts/backend/internal/store"
 	"github.com/dwts/backend/internal/store/fixture"
 	"github.com/dwts/backend/internal/store/memory"
+	"github.com/dwts/backend/internal/stories"
 )
 
 // buildDeps wires stores → services → httpapi.Deps. It is shared by `serve` and the router-level
@@ -57,7 +59,7 @@ func buildDeps(ctx context.Context, cfg config.Config, log *slog.Logger, pool *p
 	// TODO(A2): else if deps.DB != nil { incidents = postgres reader; sarCache = postgres sar_cache }
 	var sarCache store.SARCache = memory.NewSARCache()
 	// Stories (A6). TEMPORARY loader until M14 (stories.Load) — see stories_temp.go.
-	storyLoader := tempStoryLoader(cfg.StoriesDir)
+	storyLoader := func() ([]domain.Story, error) { return stories.Load(cfg.StoriesDir) }
 	storySvc, err := service.NewStoryService(ctx, storyLoader, cfg.StoriesDir, incidents, log)
 	if err != nil {
 		log.Warn("stories: some or all stories not loaded", "dir", cfg.StoriesDir, "err", err)

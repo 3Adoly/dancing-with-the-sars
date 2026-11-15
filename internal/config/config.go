@@ -48,8 +48,12 @@ type Config struct {
 	ChatRatePerMin     int
 
 	// --- Ingest fields (Mohammed) ---
-	// RawDir, BoundariesPath, USGSMinMag, IngestWorkers, FIRMSMapKey, FIRMSProduct …
-	// are added by Mohammed in M1.
+	RawDir         string
+	BoundariesPath string
+	USGSMinMag     float64
+	IngestWorkers  int
+	FIRMSMapKey    string // secret: never log it
+	FIRMSProduct   string
 }
 
 // Load reads the environment (and ./.env if present; real env vars win) and validates it.
@@ -85,6 +89,13 @@ func FromEnv(getenv func(string) string) (Config, error) {
 		ChatEnabled:        p.getBool("CHAT_ENABLED", false),
 		LLMProviders:       p.getList("LLM_PROVIDERS", "groq,gemini,openrouter"),
 		ChatRatePerMin:     p.getInt("CHAT_RATE_PER_MIN", 10),
+
+		RawDir:         p.getStr("RAW_DIR", "./data/raw"),
+		BoundariesPath: p.getStr("BOUNDARIES_PATH", "./data/boundaries/ne_50m_admin_0_countries.geojson"),
+		USGSMinMag:     p.getFloat("USGS_MIN_MAG", 4.5),
+		IngestWorkers:  p.getInt("INGEST_WORKERS", 4),
+		FIRMSMapKey:    p.getStr("FIRMS_MAP_KEY", ""),
+		FIRMSProduct:   p.getStr("FIRMS_PRODUCT", "MODIS_SP"),
 	}
 	c.LLM = map[string]LLMProviderConfig{
 		"groq":       {BaseURL: "https://api.groq.com/openai/v1", APIKey: getenv("GROQ_API_KEY"), Model: getenv("GROQ_MODEL")},
@@ -118,6 +129,12 @@ func (c Config) Validate() error {
 	}
 	if c.ChatRatePerMin < 1 {
 		errs = append(errs, fmt.Errorf("CHAT_RATE_PER_MIN=%d must be >= 1", c.ChatRatePerMin))
+	}
+	if c.USGSMinMag < 0 || c.USGSMinMag > 10 {
+		errs = append(errs, fmt.Errorf("USGS_MIN_MAG=%g out of range 0..10", c.USGSMinMag))
+	}
+	if c.IngestWorkers < 1 {
+		errs = append(errs, fmt.Errorf("INGEST_WORKERS=%d must be >= 1", c.IngestWorkers))
 	}
 	return errors.Join(errs...)
 }
@@ -212,4 +229,17 @@ func (p *parser) getList(k, def string) []string {
 		}
 	}
 	return out
+}
+
+func (p *parser) getFloat(k string, def float64) float64 {
+	v, ok := p.raw(k)
+	if !ok {
+		return def
+	}
+	f, err := strconv.ParseFloat(v, 64)
+	if err != nil {
+		p.errs = append(p.errs, fmt.Errorf("%s=%q is not a number", k, v))
+		return def
+	}
+	return f
 }

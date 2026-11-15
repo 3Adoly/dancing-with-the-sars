@@ -8,3 +8,5 @@ data/boundaries/
 .env
 *.md
 !README.md
+.superpowers/
+.claude/

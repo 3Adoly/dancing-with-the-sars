@@ -1,0 +1,8 @@
+{"type":"FeatureCollection","name":"fixture","crs":{"type":"name","properties":{"name":"urn:ogc:def:crs:OGC:1.3:CRS84"}},"features":[
+{"type":"Feature","properties":{"featurecla":"Admin-0 country","NAME":"France","ADM0_A3":"FRA","ISO_A2":"-99","ISO_A2_EH":"FR","ISO_A3":"-99","CONTINENT":"Europe","LABEL_X":2.552275,"LABEL_Y":46.696113},
+ "geometry":{"type":"MultiPolygon","coordinates":[[[[-1,43],[7,43],[7,50],[-1,50],[-1,43]]],[[[8.5,41.4],[9.5,41.4],[9.5,43],[8.5,43],[8.5,41.4]]]]}},
+{"type":"Feature","properties":{"featurecla":"Admin-0 country","NAME":"Japan","ADM0_A3":"JPN","ISO_A2":"JP","ISO_A2_EH":"JP","ISO_A3":"JPN","CONTINENT":"Asia","LABEL_X":138.0,"LABEL_Y":36.0},
+ "geometry":{"type":"Polygon","coordinates":[[[130,31],[142,31],[142,45],[130,45],[130,31]]]}},
+{"type":"Feature","properties":{"featurecla":"Admin-0 country","NAME":"Bowtieland","ADM0_A3":"BOW","ISO_A2":"-99","ISO_A2_EH":"-99","ISO_A3":"-99","CONTINENT":"Seven seas (open ocean)","LABEL_X":null,"LABEL_Y":null},
+ "geometry":{"type":"Polygon","coordinates":[[[0,0],[2,2],[2,0],[0,2],[0,0]]]}}
+],"bbox":[-1,0,142,50]}
