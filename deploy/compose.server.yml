@@ -1,41 +1,66 @@
-# Production-ish deployment on the shared team server (164.92.235.173).
-# The server already runs other services (Apache on 80/443, Postgres on 5432, apps on 8080/8081, …): this stack only uses port 8090
-# and is capped in memory/CPU so it cannot starve them.
+# Deployment on the SHARED team server (164.92.235.173). Other projects use 80/443, 5432, 5435, 5437, 8080, 8081, …
+# This stack publishes only:  API → 0.0.0.0:8090   |   PostGIS → 127.0.0.1:5440 (admin only, not public)
+# Every container is memory/CPU capped so it cannot starve the other projects. Never prune anything on this server.
 #
 #   cd /opt/dancing-with-the-sars && git pull --ff-only
-#   VERSION=$(git rev-parse --short HEAD) docker compose -f deploy/compose.server.yml up -d --build
-#
-# Today the API runs in "fixture mode" (no database). When Mohammed's DB lands (M1–M3, then A2), add a `db`
-# service here (postgis/postgis:17-3.5, bound to 127.0.0.1 on a free port: 5432 is taken) and set DATABASE_URL.
+#   docker compose -f deploy/compose.server.yml up -d db
+#   docker compose -f deploy/compose.server.yml run --rm ingest migrate
+#   docker compose -f deploy/compose.server.yml run --rm ingest boundaries
+#   docker compose -f deploy/compose.server.yml run --rm ingest run --source usgs,noaa_eq,noaa_ts,noaa_vo,eonet,glc,dfo,gdacs,ibtracs
+#   docker compose -f deploy/compose.server.yml run --rm ingest postprocess
+#   VERSION=$(git rev-parse --short HEAD) docker compose -f deploy/compose.server.yml up -d --build api
 name: dwts
 services:
+  db:
+    image: postgis/postgis:17-3.5-alpine
+    container_name: dwts-db
+    restart: unless-stopped
+    environment: { POSTGRES_USER: dwts, POSTGRES_PASSWORD: dwts, POSTGRES_DB: dwts }
+    ports: ["127.0.0.1:5440:5432"]      # localhost only; 5432/5435/5437 are other projects' databases
+    volumes: ["dwts_pgdata:/var/lib/postgresql/data"]
+    command: ["postgres","-c","shared_buffers=256MB","-c","work_mem=16MB","-c","maintenance_work_mem=128MB","-c","max_wal_size=256MB"]
+    healthcheck: { test: ["CMD-SHELL","pg_isready -h 127.0.0.1 -U dwts -d dwts"], interval: 3s, retries: 40 }
+    mem_limit: 1g
+    cpus: 1.0
+
+  ingest:
+    build: { context: .., dockerfile: Dockerfile.ingest }
+    image: dwts-ingest:latest
+    profiles: ["tools"]
+    environment:
+      DATABASE_URL: postgres://dwts:dwts@db:5432/dwts?sslmode=disable
+      LOG_FORMAT: json
+    volumes: ["dwts_data:/app/data"]
+    depends_on: { db: { condition: service_healthy } }
+    mem_limit: 1g
+    cpus: 1.0
+
   api:
     build:
       context: ..
       dockerfile: Dockerfile.api
-      args:
-        VERSION: ${VERSION:-dev}
+      args: { VERSION: "${VERSION:-dev}" }
     image: dwts-api:${VERSION:-dev}
     container_name: dwts-api
     restart: unless-stopped
-    ports:
-      - "8090:8080"   # host 8090 (8080/8081 are used by other apps on this server) → container 8080
+    ports: ["8090:8080"]                 # host 8090 (8080/8081 belong to other apps) → container 8080
     environment:
       HTTP_ADDR: ":8080"
       LOG_FORMAT: json
       LOG_LEVEL: info
-      # Public read-only API, no cookies/credentials: any origin may read it (frontend dev + deployed UI).
-      CORS_ORIGINS: "*"
-      STATS_FIXTURE: /app/testdata/stats_fixture.json
-      INCIDENTS_FIXTURE: /app/testdata/incidents_fixture.json
-      STORIES_DIR: /app/testdata/stories
+      CORS_ORIGINS: "*"                  # public read-only API, no cookies/credentials
+      DATABASE_URL: postgres://dwts:dwts@db:5432/dwts?sslmode=disable
+      STORIES_DIR: ${STORIES_DIR:-/app/data/stories}
+      # Fixture mode: set these only while the DB read side (A2) is not deployed.
+      STATS_FIXTURE: ${STATS_FIXTURE-}
+      INCIDENTS_FIXTURE: ${INCIDENTS_FIXTURE-}
+    depends_on: { db: { condition: service_healthy } }
     mem_limit: 256m
     cpus: 0.5
     read_only: true
-    security_opt:
-      - no-new-privileges:true
-    logging:
-      driver: json-file
-      options:
-        max-size: "10m"
-        max-file: "3"
+    security_opt: ["no-new-privileges:true"]
+    logging: { driver: json-file, options: { max-size: "10m", max-file: "3" } }
+
+volumes:
+  dwts_pgdata: {}
+  dwts_data: {}
