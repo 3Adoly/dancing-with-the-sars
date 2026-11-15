@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+
+	"github.com/dwts/backend/internal/domain"
 )
 
 // LLMProviderConfig configures one OpenAI-compatible LLM endpoint (ADDITIONAL — NOT REQUIRED).
@@ -33,6 +35,8 @@ type Config struct {
 	CubeReloadInterval time.Duration
 	StaticDir          string
 	StatsFixture       string // DEV-ONLY: JSON fixture for E2–E5 when there is no DB (until A2)
+	IncidentsFixture   string // DEV-ONLY: JSON incidents for E10 when there is no DB (until A2)
+	ASFALOSLevel       string // processingLevel used for ALOS searches (L1.5 verified 2026-11-15)
 	ASFBaseURL         string
 	ASFTimeout         time.Duration
 	SARWindowDays      int
@@ -71,6 +75,8 @@ func FromEnv(getenv func(string) string) (Config, error) {
 		CubeReloadInterval: p.getDur("CUBE_RELOAD_INTERVAL", 60*time.Second),
 		StaticDir:          p.getStr("STATIC_DIR", ""),
 		StatsFixture:       p.getStr("STATS_FIXTURE", ""),
+		IncidentsFixture:   p.getStr("INCIDENTS_FIXTURE", ""),
+		ASFALOSLevel:       p.getStr("ASF_ALOS_LEVEL", "L1.5"),
 		ASFBaseURL:         p.getStr("ASF_BASE_URL", "https://api.daac.asf.alaska.edu/services/search/param"),
 		ASFTimeout:         p.getDur("ASF_TIMEOUT", 8*time.Second),
 		SARWindowDays:      p.getInt("SAR_WINDOW_DAYS", 45),
@@ -114,6 +120,17 @@ func (c Config) Validate() error {
 		errs = append(errs, fmt.Errorf("CHAT_RATE_PER_MIN=%d must be >= 1", c.ChatRatePerMin))
 	}
 	return errors.Join(errs...)
+}
+
+// SARMissionTable returns SARMissions() with config overrides applied (ALOS processing level).
+func (c Config) SARMissionTable() []domain.SARMission {
+	ms := SARMissions()
+	for i := range ms {
+		if ms[i].ID == "alos" && c.ASFALOSLevel != "" {
+			ms[i].ASFParams = map[string]string{"platform": "ALOS", "processingLevel": c.ASFALOSLevel}
+		}
+	}
+	return ms
 }
 
 // ChatConfigured reports whether chat is enabled AND at least one provider has a key (or Ollama a URL).

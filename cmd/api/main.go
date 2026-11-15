@@ -19,11 +19,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/dwts/backend/internal/config"
+	"github.com/dwts/backend/internal/external/asf"
 	"github.com/dwts/backend/internal/httpapi"
 	"github.com/dwts/backend/internal/platform"
 	"github.com/dwts/backend/internal/service"
 	"github.com/dwts/backend/internal/store"
 	"github.com/dwts/backend/internal/store/fixture"
+	"github.com/dwts/backend/internal/store/memory"
 )
 
 // version is set at build time: go build -ldflags "-X main.version=demo-v1".
@@ -98,7 +100,26 @@ func runServe(args []string) error {
 		statsReader = fr
 	}
 	// TODO(A2): else if deps.DB != nil { statsReader = postgres.NewReader(pool) }
-	features := map[string]bool{"chat": deps.ChatEnabled, "stories": false, "grid": false, "sar": false}
+	// SAR (A5). Incidents: INCIDENTS_FIXTURE (dev-only) until the Postgres reader lands in A2.
+	// Cache: in-memory until store/postgres sarcache.go (A2).
+	var incidents store.IncidentReader
+	if cfg.IncidentsFixture != "" {
+		fi, err := fixture.LoadIncidents(cfg.IncidentsFixture)
+		if err != nil {
+			return err
+		}
+		log.Warn("DEV: serving incidents from a fixture file, not the database", "path", cfg.IncidentsFixture, "incidents", fi.Len())
+		incidents = fi
+	}
+	// TODO(A2): else if deps.DB != nil { incidents = postgres reader; sarCache = postgres sar_cache }
+	var sarCache store.SARCache = memory.NewSARCache()
+	asfClient := asf.New(cfg.ASFBaseURL, cfg.ASFTimeout, platform.NewHTTPClient(cfg.ASFTimeout+2*time.Second))
+	sar := service.NewSARService(incidents, sarCache, asfClient, cfg.SARMissionTable(), nil, service.SARConfig{
+		WindowDays: cfg.SARWindowDays, MemTTL: cfg.SARCacheTTL, DBFresh: cfg.SARDBFresh, ASFTimeout: cfg.ASFTimeout, Log: log,
+	})
+	deps.SAR = sar
+
+	features := map[string]bool{"chat": deps.ChatEnabled, "stories": false, "grid": false, "sar": incidents != nil}
 	stats := service.NewStatsService(statsReader, nil, cfg.MinYear, features, log)
 	if err := stats.Start(ctx, cfg.CubeReloadInterval); err != nil {
 		log.Warn("stats not ready yet; E2/E4/E5 answer 503 not_ready until data loads", "err", err)

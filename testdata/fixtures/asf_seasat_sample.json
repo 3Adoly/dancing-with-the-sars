@@ -1,0 +1,126 @@
+{
+ "_comment": "REAL ASF response (trimmed) recorded 2026-11-15: platform=SEASAT&maxResults=2. Note: bytes is an object and processingLevel is null",
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       -4.9797,
+       53.6139
+      ],
+      [
+       -5.7045,
+       52.8098
+      ],
+      [
+       -4.201,
+       52.3731
+      ],
+      [
+       -3.4518,
+       53.1695
+      ],
+      [
+       -4.9797,
+       53.6139
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "sceneName": "SS_01502_STD_F2536",
+    "fileID": "SS_01502_STD_F2536",
+    "platform": "SEASAT 1",
+    "sensor": "SAR",
+    "beamModeType": "STD",
+    "polarization": "HH",
+    "flightDirection": "DESCENDING",
+    "pathNumber": 37,
+    "frameNumber": 2536,
+    "orbit": 1502,
+    "processingLevel": null,
+    "startTime": "1978-10-10T01:28:55Z",
+    "stopTime": "1978-10-10T01:29:10Z",
+    "url": "https://cumulus.asf.earthdatacloud.nasa.gov/SEASAT/SS_01502_STD_F2536/SS_01502_STD_F2536.h5",
+    "browse": [
+     "https://cumulus.asf.earthdatacloud.nasa.gov/BROWSE/SEASAT/SS_01502_STD_F2536/SS_01502_STD_F2536.jpg",
+     "https://cumulus.asf.earthdatacloud.nasa.gov/BROWSE/SEASAT/SS_01502_STD_F2536/SS_01502_STD_F2536_THUMBNAIL.jpg"
+    ],
+    "bytes": {
+     "SS_01502_STD_F2536.tif": {
+      "bytes": 287076789,
+      "format": "GeoTIFF"
+     },
+     "SS_01502_STD_F2536.h5": {
+      "bytes": 425004910,
+      "format": "HDF5"
+     }
+    }
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "coordinates": [
+     [
+      [
+       -4.3699,
+       54.2682
+      ],
+      [
+       -5.1144,
+       53.4671
+      ],
+      [
+       -3.5909,
+       53.0242
+      ],
+      [
+       -2.8214,
+       53.8173
+      ],
+      [
+       -4.3699,
+       54.2682
+      ]
+     ]
+    ],
+    "type": "Polygon"
+   },
+   "properties": {
+    "sceneName": "SS_01502_STD_F2523",
+    "fileID": "SS_01502_STD_F2523",
+    "platform": "SEASAT 1",
+    "sensor": "SAR",
+    "beamModeType": "STD",
+    "polarization": "HH",
+    "flightDirection": "DESCENDING",
+    "pathNumber": 37,
+    "frameNumber": 2523,
+    "orbit": 1502,
+    "processingLevel": null,
+    "startTime": "1978-10-10T01:28:42Z",
+    "stopTime": "1978-10-10T01:28:57Z",
+    "url": "https://cumulus.asf.earthdatacloud.nasa.gov/SEASAT/SS_01502_STD_F2523/SS_01502_STD_F2523.h5",
+    "browse": [
+     "https://cumulus.asf.earthdatacloud.nasa.gov/BROWSE/SEASAT/SS_01502_STD_F2523/SS_01502_STD_F2523.jpg",
+     "https://cumulus.asf.earthdatacloud.nasa.gov/BROWSE/SEASAT/SS_01502_STD_F2523/SS_01502_STD_F2523_THUMBNAIL.jpg"
+    ],
+    "bytes": {
+     "SS_01502_STD_F2523.tif": {
+      "bytes": 287306983,
+      "format": "GeoTIFF"
+     },
+     "SS_01502_STD_F2523.h5": {
+      "bytes": 422985016,
+      "format": "HDF5"
+     }
+    }
+   }
+  }
+ ]
+}

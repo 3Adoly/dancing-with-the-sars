@@ -27,6 +27,7 @@ type Deps struct {
 	Version        string
 	ChatEnabled    bool     // ADDITIONAL — NOT REQUIRED (A12)
 	Stats          StatsAPI // nil = no stats service (E2/E4/E5 → 503, E3 static)
+	SAR            SARAPI   // nil = E10/E11 → 503
 }
 
 // NewRouter builds the full HTTP handler.
@@ -59,19 +60,19 @@ func NewRouter(d Deps) http.Handler {
 
 	r.Route("/api/v1", func(r chi.Router) {
 		// Registered with 501 until their task lands, so the frontend sees the final error shape.
-		r.Get("/meta", h.meta)                                // E2
-		r.Get("/incident-types", h.incidentTypes)             // E3
-		r.Get("/stats/choropleth", h.choropleth)              // E4
-		r.Get("/stats/timeseries", h.timeseries)              // E5
-		r.Get("/stats/grid", notImplemented("A8"))            // E6
-		r.Get("/incidents", notImplemented("A4"))             // E7
-		r.Get("/incidents/{id}", notImplemented("A4"))        // E8
-		r.Get("/search", notImplemented("A4"))                // E9
-		r.Get("/incidents/{id}/sar", notImplemented("A5"))    // E10
-		r.Get("/sar/coverage-timeline", notImplemented("A5")) // E11
-		r.Get("/stories", notImplemented("A6"))               // E12
-		r.Get("/stories/{id}", notImplemented("A6"))          // E13
-		r.Post("/chat", h.chat)                               // E15 (ADDITIONAL — NOT REQUIRED)
+		r.Get("/meta", h.meta)                                 // E2
+		r.Get("/incident-types", h.incidentTypes)              // E3
+		r.Get("/stats/choropleth", h.choropleth)               // E4
+		r.Get("/stats/timeseries", h.timeseries)               // E5
+		r.Get("/stats/grid", notImplemented("A8"))             // E6
+		r.Get("/incidents", notImplemented("A4"))              // E7
+		r.Get("/incidents/{id}", notImplemented("A4"))         // E8
+		r.Get("/search", notImplemented("A4"))                 // E9
+		r.Get("/incidents/{id}/sar", h.incidentSAR)            // E10
+		r.Get("/sar/coverage-timeline", h.sarCoverageTimeline) // E11
+		r.Get("/stories", notImplemented("A6"))                // E12
+		r.Get("/stories/{id}", notImplemented("A6"))           // E13
+		r.Post("/chat", h.chat)                                // E15 (ADDITIONAL — NOT REQUIRED)
 	})
 	r.Get("/media/stories/{id}/{file}", notImplemented("A6")) // E14
 
