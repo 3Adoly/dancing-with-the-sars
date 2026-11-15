@@ -1,5 +1,5 @@
 # Production-ish deployment on the shared team server (164.92.235.173).
-# The server already runs other services (Apache on 80/443, Postgres on 5432, …): this stack only uses port 8080
+# The server already runs other services (Apache on 80/443, Postgres on 5432, apps on 8080/8081, …): this stack only uses port 8090
 # and is capped in memory/CPU so it cannot starve them.
 #
 #   cd /opt/dancing-with-the-sars && git pull --ff-only
@@ -19,7 +19,7 @@ services:
     container_name: dwts-api
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8090:8080"   # host 8090 (8080/8081 are used by other apps on this server) → container 8080
     environment:
       HTTP_ADDR: ":8080"
       LOG_FORMAT: json
